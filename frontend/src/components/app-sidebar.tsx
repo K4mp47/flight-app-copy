@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   IconDashboard,
   IconListDetails,
-  IconPlaneInflight
-} from "@tabler/icons-react"
+  IconPlaneInflight,
+} from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -16,9 +16,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { api } from "@/lib/api"
-
+} from "@/components/ui/sidebar";
+import { api } from "@/lib/api";
 
 const data = {
   user: {
@@ -41,11 +40,16 @@ const data = {
       title: "Flights",
       url: "#",
       icon: IconPlaneInflight,
-    }
+    },
   ],
-}
+};
 
-export function AppSidebar({ onSelect, ...props }: React.ComponentProps<typeof Sidebar> & { onSelect?: (view: string) => void }) {
+export function AppSidebar({
+  onSelect,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  onSelect?: (view: string) => void;
+}) {
   const [user, setUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
@@ -80,5 +84,5 @@ export function AppSidebar({ onSelect, ...props }: React.ComponentProps<typeof S
         <NavUser user={user ?? data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

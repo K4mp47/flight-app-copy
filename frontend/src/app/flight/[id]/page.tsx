@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
-import { api } from '@/lib/api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { useParams } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { api } from "@/lib/api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { toast } from "sonner";
 // import BookingForm from '@/components/BookingForm';
 
 export default function FlightDetailsPage() {
@@ -24,8 +30,11 @@ export default function FlightDetailsPage() {
       setFlight(data);
       setLoading(false);
     } catch (error: Error | unknown) {
-      toast.error((error as Error).message + ": " +(error as Error).name || 'Failed to fetch flight details');
-    } 
+      toast.error(
+        (error as Error).message + ": " + (error as Error).name ||
+          "Failed to fetch flight details"
+      );
+    }
   }, [flightId]);
 
   useEffect(() => {
@@ -57,7 +66,9 @@ export default function FlightDetailsPage() {
   }
 
   if (!flight) {
-    return <p className="text-center text-muted-foreground">Flight not found.</p>;
+    return (
+      <p className="text-center text-muted-foreground">Flight not found.</p>
+    );
   }
 
   const departureDate = new Date(flight.departure_time);
@@ -67,24 +78,30 @@ export default function FlightDetailsPage() {
     <div className="grid md:grid-cols-2 gap-8 m-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl">{flight.origin} &rarr; {flight.destination}</CardTitle>
-          <CardDescription className="text-lg">Flight No: {flight.id_flight}</CardDescription>
+          <CardTitle className="text-3xl">
+            {flight.origin} &rarr; {flight.destination}
+          </CardTitle>
+          <CardDescription className="text-lg">
+            Flight No: {flight.id_flight}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <p className="font-semibold">Departure:</p>
             <p>
               {isNaN(departureDate.getTime())
-                ? 'TBD'
-                : `${format(departureDate, 'MMM dd, yyyy HH:mm')}`} ({flight.origin})
+                ? "TBD"
+                : `${format(departureDate, "MMM dd, yyyy HH:mm")}`}{" "}
+              ({flight.origin})
             </p>
           </div>
           <div>
             <p className="font-semibold">Arrival:</p>
             <p>
               {isNaN(arrivalDate.getTime())
-                ? 'TBD'
-                : `${format(arrivalDate, 'MMM dd, yyyy HH:mm')}`} ({flight.destination})
+                ? "TBD"
+                : `${format(arrivalDate, "MMM dd, yyyy HH:mm")}`}{" "}
+              ({flight.destination})
             </p>
           </div>
           <div>
@@ -93,7 +110,9 @@ export default function FlightDetailsPage() {
           </div>
           <div>
             <p className="font-semibold">Base Price:</p>
-            <p className="text-2xl font-bold text-blue-600">${flight.base_price}</p>
+            <p className="text-2xl font-bold text-blue-600">
+              ${flight.base_price}
+            </p>
           </div>
           {/* <div>
             <p className="font-semibold">Available Seats:</p>
@@ -122,7 +141,9 @@ export default function FlightDetailsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Book Your Flight</CardTitle>
-          <CardDescription>Select your class and proceed with booking.</CardDescription>
+          <CardDescription>
+            Select your class and proceed with booking.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* <BookingForm flight={flight} onBookingSuccess={fetchFlightDetails} /> */}

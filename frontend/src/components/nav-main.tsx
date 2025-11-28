@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { type Icon } from "@tabler/icons-react"
+import { type Icon } from "@tabler/icons-react";
 
 // import { Button } from "@/components/ui/button"
 import {
@@ -9,28 +9,30 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavMain({
   items,
   onSelect,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
-  onSelect?: (view: string) => void
+    title: string;
+    url: string;
+    icon?: Icon;
+  }[];
+  onSelect?: (view: string) => void;
 }) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarMenu></SidebarMenu>
         <SidebarMenu>
-        </SidebarMenu>
-        <SidebarMenu>
-          {items.map((item) => (
+          {items.map(item => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} onClick={() => onSelect?.(item.title)}>
+              <SidebarMenuButton
+                tooltip={item.title}
+                onClick={() => onSelect?.(item.title)}
+              >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>
               </SidebarMenuButton>
@@ -39,5 +41,5 @@ export function NavMain({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

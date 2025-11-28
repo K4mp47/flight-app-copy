@@ -1,66 +1,76 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { AppSidebar } from "@/components/app-sidebar"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import * as React from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { api } from "@/lib/api"
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { api } from "@/lib/api";
 
 export default function Page() {
-  const [view, setView] = React.useState<string>("Fleet")
-  const [tableData, setTableData] = React.useState<(Aircraft | Route | Flight)[]>([])
-  const [, setLoading] = React.useState<boolean>(false)
+  const [view, setView] = React.useState<string>("Fleet");
+  const [tableData, setTableData] = React.useState<
+    (Aircraft | Route | Flight)[]
+  >([]);
+  const [, setLoading] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     async function load() {
-      setLoading(true)
+      setLoading(true);
       try {
-        const user = await api.get<{ airline_code?: string }>("/users/me").catch(() => ({} as User))
-        const code = user?.airline_code ?? ""
+        const user = await api
+          .get<{ airline_code?: string }>("/users/me")
+          .catch(() => ({}) as User);
+        const code = user?.airline_code ?? "";
         if (view === "Fleet") {
-          // try to fetch user's airline fleet, fallback to bundled JSON  
-          const res = await api.get<Aircraft[]>(`/airline/${encodeURIComponent(code)}/fleet`)
-          console.log(res)
-          if (mounted) setTableData(res)
+          // try to fetch user's airline fleet, fallback to bundled JSON
+          const res = await api.get<Aircraft[]>(
+            `/airline/${encodeURIComponent(code)}/fleet`
+          );
+          console.log(res);
+          if (mounted) setTableData(res);
         } else if (view === "Routes") {
-          const route_res = await api.get<Routes>(`/airline/${encodeURIComponent(code)}/route`)
-          console.log(route_res)
-          if (mounted) setTableData(route_res.routes)
+          const route_res = await api.get<Routes>(
+            `/airline/${encodeURIComponent(code)}/route`
+          );
+          console.log(route_res);
+          if (mounted) setTableData(route_res.routes);
         } else if (view === "Flights") {
-          const flight_res = await api.get<Flights>(`/airline/${encodeURIComponent(code)}/flight`)
-          console.log(flight_res)
+          const flight_res = await api.get<Flights>(
+            `/airline/${encodeURIComponent(code)}/flight`
+          );
+          console.log(flight_res);
           // backend returns the flights array directly (not { flights: [...] }).
           // Handle both shapes for compatibility without using `any`.
           const flights = Array.isArray(flight_res)
             ? (flight_res as (Aircraft | Route | Flight)[])
-            : (flight_res as unknown as { flights?: (Aircraft | Route | Flight)[] })?.flights ?? []
-          if (mounted) setTableData(flights)
+            : ((
+                flight_res as unknown as {
+                  flights?: (Aircraft | Route | Flight)[];
+                }
+              )?.flights ?? []);
+          if (mounted) setTableData(flights);
         } else {
-          if (mounted) setTableData([])
+          if (mounted) setTableData([]);
         }
       } catch (err) {
-        console.error(err)
-        if (mounted) setTableData([])
+        console.error(err);
+        if (mounted) setTableData([]);
       } finally {
-        if (mounted) setLoading(false)
+        if (mounted) setLoading(false);
       }
     }
 
-    load()
+    load();
     return () => {
-      mounted = false
-    }
-  }, [view])
+      mounted = false;
+    };
+  }, [view]);
 
   return (
     <SidebarProvider
@@ -71,7 +81,12 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" onSelect={(v: unknown) => { if (typeof v === "string") setView(v); }} />
+      <AppSidebar
+        variant="inset"
+        onSelect={(v: unknown) => {
+          if (typeof v === "string") setView(v);
+        }}
+      />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
@@ -92,5 +107,5 @@ export default function Page() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

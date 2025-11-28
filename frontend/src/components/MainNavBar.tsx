@@ -1,10 +1,10 @@
-import Link from "next/link"
+import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 
 interface MainNavBarProps {
   companyuser: boolean;
@@ -35,18 +35,24 @@ export function MainNavBar({ companyuser }: MainNavBarProps) {
         <NavigationMenuList className="flex justify-center w-full">
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
-              <Link href="/login" className="font-bold">Login</Link>
+              <Link href="/login" className="font-bold">
+                Login
+              </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
-              <Link href="/profile" className="font-bold">Profile</Link>
+              <Link href="/profile" className="font-bold">
+                Profile
+              </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           {companyuser && (
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link href="/dashboard" className="font-bold">Dashboard</Link>
+                <Link href="/dashboard" className="font-bold">
+                  Dashboard
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
           )}

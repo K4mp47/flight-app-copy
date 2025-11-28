@@ -28,7 +28,7 @@ const formSchema = z.object({
     required_error: "Departure date is required",
   }),
   return_: z.date({
-    required_error: "Return date is required", 
+    required_error: "Return date is required",
   }),
 });
 
@@ -43,7 +43,7 @@ export default function FlightCreationForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       airline_code: airlineCode || "AZ",
-      aircraft_id: undefined ,
+      aircraft_id: undefined,
       number_route: undefined,
       outbound: undefined,
       return_: undefined,
@@ -57,7 +57,7 @@ export default function FlightCreationForm({
   async function onSubmit(data: FlightFormValues) {
     try {
       console.log("Submitting flight data:", data);
-      
+
       // Format the dates for API
       const payload = {
         airline_code: data.airline_code.toUpperCase(),
@@ -66,7 +66,7 @@ export default function FlightCreationForm({
           {
             outbound: format(data.outbound, "yyyy-MM-dd"),
             return_: format(data.return_, "yyyy-MM-dd"),
-          }
+          },
           // Add more objects here if you want to support multiple flight schedules
         ],
       };
@@ -74,21 +74,23 @@ export default function FlightCreationForm({
       console.log("API Payload:", payload);
 
       // Make the API callflights/create
-      await api.post(`/airline/route/${data.number_route.toUpperCase()}/add-flight`, payload); // Update with your actual endpoint
-      
+      await api.post(
+        `/airline/route/${data.number_route.toUpperCase()}/add-flight`,
+        payload
+      ); // Update with your actual endpoint
+
       toast.success("Flight created successfully!");
-      
+
       // Reset form after successful submission
       form.reset();
-      
+
       // Close dialog if needed
       document.getElementById("close-flight-dialog")?.click();
-      
     } catch (error: unknown) {
       console.error("Error creating flight:", error);
       toast.error(
-        "Error creating flight: " + 
-        (error instanceof Error ? error.message : "Unknown error")
+        "Error creating flight: " +
+          (error instanceof Error ? error.message : "Unknown error")
       );
     }
   }
@@ -105,11 +107,13 @@ export default function FlightCreationForm({
               <FormItem>
                 <FormLabel>Number of Aircraft</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="e.g., 10" 
+                  <Input
+                    type="number"
+                    placeholder="e.g., 10"
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                    onChange={e =>
+                      field.onChange(parseInt(e.target.value) || undefined)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -125,10 +129,10 @@ export default function FlightCreationForm({
               <FormItem>
                 <FormLabel>Code of the Route</FormLabel>
                 <FormControl>
-                  <Input  
-                    placeholder="e.g., 20" 
+                  <Input
+                    placeholder="e.g., 20"
                     {...field}
-                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                    onChange={e => field.onChange(e.target.value.toUpperCase())}
                   />
                 </FormControl>
                 <FormMessage />
@@ -166,20 +170,19 @@ export default function FlightCreationForm({
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-auto p-2" 
-                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  <PopoverContent
+                    className="w-auto p-2"
+                    onOpenAutoFocus={e => e.preventDefault()}
                   >
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={(value) => {
+                      onSelect={value => {
                         field.onChange(value);
                         setDodOpen(false);
                       }}
-                      disabled={(date) =>
-                        date < new Date() ||
-                        date < new Date("1900-01-01")
+                      disabled={date =>
+                        date < new Date() || date < new Date("1900-01-01")
                       }
                     />
                   </PopoverContent>
@@ -219,18 +222,18 @@ export default function FlightCreationForm({
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent 
+                  <PopoverContent
                     className="w-auto p-2"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onOpenAutoFocus={e => e.preventDefault()}
                   >
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={(value) => {
+                      onSelect={value => {
                         field.onChange(value);
                         setDorOpen(false);
                       }}
-                      disabled={(date) => {
+                      disabled={date => {
                         const today = new Date();
                         const dod = form.getValues("outbound");
                         // Disable dates before today, before 1900, or before departure date
@@ -251,8 +254,8 @@ export default function FlightCreationForm({
 
         {/* Submit Button */}
         <div className="flex justify-end">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full md:w-auto"
             disabled={form.formState.isSubmitting}
           >
