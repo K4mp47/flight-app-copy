@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-// import FlightCard from '@/components/FlightCard';
+import FlightCard from "@/components/FlightCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -19,23 +19,26 @@ import { Button } from "@/components/ui/button";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Flight } from "@/types/flight";
 
 export default function SearchResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [flights, setFlights] = useState<Flight[]>([]);
+  const [outboundFlights, setOutboundFlights] = useState<Flight[]>([]);
+  const [returnFlights, setReturnFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("departure_time");
   const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
   const [companyuser, setCompanyuser] = useState(false);
+  const [selectedOutboundFlight, setSelectedOutboundFlight] = useState<Flight | null>(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
         const token = document.cookie
           .split("; ")
-          .find(row => row.startsWith("token="))
+          .find((row) => row.startsWith("token="))
           ?.split("=")[1];
         if (token) {
           const payload = JSON.parse(atob(token.split(".")[1]));
@@ -56,29 +59,40 @@ export default function SearchResultsPage() {
         const origin = searchParams.get("origin") || "";
         const destination = searchParams.get("destination") || "";
         const departure_date = searchParams.get("departure_date") || "";
+        const return_date = searchParams.get("return_date") || "";
 
         const query = new URLSearchParams();
-        if (origin) query.append("origin", origin);
-        if (destination) query.append("destination", destination);
-        if (departure_date) query.append("departure_date", departure_date);
-        query.append("sort_by", sortBy);
-        query.append("sort_order", sortOrder);
+        if (origin) query.append("departure_airport", origin);
+        if (destination) query.append("arrival_airport", destination);
+        if (departure_date) query.append("departure_date_outbound", departure_date);
+        if (return_date) query.append("departure_date_return", return_date);
+        query.append("round_trip_flight", return_date ? "true" : "false");
+        query.append("direct_flights", "true");
+        query.append("id_class", "4");
 
-        const data = await api.get<Flight[]>(
-          `/flights/search?${query.toString()}`
+        const data = await api.get<{ outbound_flights: Flight[], return_flights: Flight[] }>(
+          `/flight/search?${query.toString()}`
         );
-        setFlights(data);
-        setLoading(false);
+        setOutboundFlights(data.outbound_flights || []);
+        setReturnFlights(data.return_flights || []);
       } catch (error: Error | unknown) {
         toast.error((error as Error).message || "Failed to fetch flights");
       }
-      // } finally {
-      //   setLoading(false);
-      // }
+        setLoading(false);
     };
 
     fetchFlights();
   }, [searchParams, sortBy, sortOrder]);
+
+  const handleSelectOutboundFlight = (flight: Flight) => {
+    setSelectedOutboundFlight(flight);
+  };
+
+  const handleBookReturnFlight = (returnFlight: Flight) => {
+    if (selectedOutboundFlight) {
+      router.push(`/reservation?flightId=${selectedOutboundFlight.id_flight}&returnFlightId=${returnFlight.id_flight}`);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -134,7 +148,7 @@ export default function SearchResultsPage() {
 
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
           ))}
         </div>
@@ -142,18 +156,30 @@ export default function SearchResultsPage() {
 
       {error && <p className="text-red-500 text-center">{error}</p>}
 
-      {!loading && flights.length === 0 && !error && (
+      {!loading && outboundFlights.length === 0 && !error && (
         <p className="text-center text-muted-foreground">
-          No flights found matching your criteria.
+          No outbound flights found matching your criteria.
         </p>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
-        {flights.map(() => (
-          <></>
-          // <FlightCard key={flight.id} flight={flight} />
+        {outboundFlights.map((flight) => (
+          <FlightCard key={flight.id_flight} flight={flight} onSelect={handleSelectOutboundFlight} isReturnFlight={false} />
         ))}
       </div>
+
+      {selectedOutboundFlight && returnFlights.length > 0 && (
+        <>
+          <h2 className="text-3xl font-bold mb-6 w-full flex justify-center mt-8">
+            Select Return Flight
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+            {returnFlights.map((flight) => (
+              <FlightCard key={flight.id_flight} flight={flight} onSelect={handleBookReturnFlight} isReturnFlight={true} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
