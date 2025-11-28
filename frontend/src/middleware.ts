@@ -5,7 +5,7 @@ import {
   isTokenExpired,
   deleteToken,
   companyToken,
-} from "@/lib/token";
+} from "@/services/token";
 
 export async function middleware(request: NextRequest) {
   // lista Route da controllare
