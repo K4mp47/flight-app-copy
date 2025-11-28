@@ -70,7 +70,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
-import aircraftList from "@/app/dashboard/aircraft.json";
+import aircraftList from "@/services/aircraft.json";
 import { api } from "@/lib/api";
 // Removed the direct import from @radix-ui/react-dialog to avoid context mismatch
 import {
@@ -373,11 +373,11 @@ export function DataTable({
   ];
 
   const columnsByView: Record<string, ColumnDef<Aircraft | Route | Flight>[]> =
-    {
-      Fleet: fleetColumns as ColumnDef<Aircraft | Route | Flight>[],
-      Routes: routeColumns as ColumnDef<Aircraft | Route | Flight>[],
-      Flights: flightColumns as ColumnDef<Aircraft | Route | Flight>[],
-    };
+  {
+    Fleet: fleetColumns as ColumnDef<Aircraft | Route | Flight>[],
+    Routes: routeColumns as ColumnDef<Aircraft | Route | Flight>[],
+    Flights: flightColumns as ColumnDef<Aircraft | Route | Flight>[],
+  };
 
   function RegularRow({ row }: { row: Row<Aircraft | Route | Flight> }) {
     return (
@@ -735,9 +735,9 @@ export function DataTable({
                               {header.isPlaceholder
                                 ? null
                                 : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
                             </TableHead>
                           );
                         })}
