@@ -10,7 +10,7 @@ from db import SessionLocal
 flight_bp = Blueprint("flight_bp", __name__)
 
 
-@flight_bp.route("/search", methods=["POST"])
+@flight_bp.route("/search", methods=["GET"])
 def flight_search():
     """
 Flight Search
@@ -32,34 +32,42 @@ description: |
   - Interline search is **not implemented**.
 
 parameters:
-  - in: body
-    name: body
+  - in: query
+    name: departure_airport
     required: true
-    schema:
-      type: object
-      properties:
-        departure_airport:
-          type: string
-          example: "FCO"
-        arrival_airport:
-          type: string
-          example: "MIA"
-        round_trip_flight:
-          type: boolean
-          example: true
-        direct_flights:
-          type: boolean
-          example: false
-        departure_date_outbound:
-          type: string
-          example: "2025-08-10"
-        departure_date_return:
-          type: string
-          nullable: true
-          example: "2025-08-21"
-        id_class:
-          type: integer
-          example: 4
+    type: string
+    example: "FCO"
+  - in: query
+    name: arrival_airport
+    required: true
+    type: string
+    example: "MIA"
+  - in: query
+    name: round_trip_flight
+    required: true
+    type: boolean
+    example: true
+  - in: query
+    name: direct_flights
+    required: true
+    type: boolean
+    example: false
+  - in: query
+    name: departure_date_outbound
+    required: true
+    type: string
+    example: "2025-08-10"
+  - in: query
+    name: departure_date_return
+    required: false
+    type: string
+    nullable: true
+    example: "2025-08-21"
+  - in: query
+    name: id_class
+    required: true
+    type: integer
+    example: 4
 
 responses:
   200:
@@ -161,10 +169,14 @@ responses:
     description: Invalid search parameters
   404:
     description: No flights found for the given search parameters
-"""    
+"""
     session = SessionLocal()
     try:
-        data = Flight_search_schema(**request.get_json())
+        args = request.args.to_dict()
+        args["round_trip_flight"] = args.get("round_trip_flight", "false").lower() == "true"
+        args["direct_flights"] = args.get("direct_flights", "false").lower() == "true"
+        args["id_class"] = int(args.get("id_class", 4))
+        data = Flight_search_schema(**args)
     except ValidationError as e:
         return jsonify({"message": str(e)}), 400
     controller = Flight_controller(session)
