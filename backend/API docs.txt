@@ -1,0 +1,2206 @@
+User con ruoli, per spiegazione dei ruoli andare ad API 6) users/<int:user_id>/change-role
+id 2 email mario.rossi@example.com Ruolo -> Admain
+id 7 email Monkey.D.Rufy@gmail.com Ruolo -> Airline-Admin
+
+
+------------------------------------------------------------------------------------------------------------------
+1) /users/register  methods=["POST"]
+
+API che serve per creare un utente e aggiungerlo sul db e in caso di sucesso restituisce il token.
+
+Parametri:
+
+body {
+  "name": "Rufy",
+  "lastname": "Monkey D. ",
+  "email": "Monkey.D.Rufy@gmail.com",
+  "pwd": "Password123!",
+  "pwd2": "Password123!"
+}
+
+Vincoli sui Parametri:
+la password deve avere almeno 1 lettera maiuscola, 1 numero e 1 carattere speciale.
+la password deve essere almeno lunga 8 caratteri.
+
+
+risposta 200
+
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1Mzc0OTIxOSwianRpIjoiNWEwNjBlMmEtMDkxYy00NWYwLTkyZDItYjQ1MDkzZTFiY2U4IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEwIiwibmJmIjoxNzUzNzQ5MjE5LCJjc3JmIjoiMjRlOWU5ZmItNTJhYy00ZmY3LWJlMWEtNTRlYzI4MTgwNDExIiwiZXhwIjoxNzUzNzUwMTE5LCJyb2xlIjoiVXNlciJ9.xGYux7jTXegf38-mL9VQU6MuzlLpC9ytVBgnzHhQ5oc",
+    "message": "User registered"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+
+2) /users/login methods=["POST"]
+
+API che serve per autenticare un utente e restituisce il token
+
+body {
+  "email": "Zoro.Roronoa@gmail.com",
+  "pwd": "Password123!"
+}
+
+risposta 200
+
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1Mzc0OTYzNywianRpIjoiYTE1ZTdkYTAtYTk1Yy00NWNmLWJiYTUtZmI2NjI2MmE1NjY2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEwIiwibmJmIjoxNzUzNzQ5NjM3LCJjc3JmIjoiYmY0OTljY2ItNDY4Mi00MDhlLWI4N2MtYTIwY2VlMmZiYjQzIiwiZXhwIjoxNzUzNzUwNTM3LCJyb2xlIjoiVXNlciJ9.bJL7wMq0SfZA1EbScTpx2ypl0YXvk0Ao5V7Fc3VitvA"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+
+3) /users/me methods=["GET"]
+
+API che restituisce le informazioni base di un utente, per accederci bisogna essere autenticati.
+
+Authorization Bearer token_utente
+
+risposta 200
+
+{
+    "email": "Sanji.Vinsmoke@gmail.com",
+    "lastname": "Vinsmoke",
+    "name": "Sanji"
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+4) /users/logout  methods=["POST"]
+
+API che elimina il token jwt che gli viene passato
+
+Authorization Bearer token_utente
+
+risposta 200
+
+{
+    "msg": "Logout successful"
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+5) /users/ methods=["GET"]
+
+API che ritorna tutti gli users presenti sul db in formato JSON, per usarla bisogna avere ruolo Admin, per spiegazioni ruoli guardare API 6.
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+[
+    {
+        "email": "mario.rossi@example.com",
+        "id_user": 2,
+        "lastname": "Rossi",
+        "name": "Mario",
+        "role": {
+            "id_role": 1,
+            "name": "Admin"
+        }
+    },
+    {
+        "email": "il.rossi@sssssssss.com",
+        "id_user": 4,
+        "lastname": "Fiedorov",
+        "name": "Oscar",
+        "role": {
+            "id_role": 3,
+            "name": "Airline-Admin"
+        }
+    },
+    {
+        "email": "Zoro.Roronoa@gmail.com",
+        "id_user": 8,
+        "lastname": "Roronoa",
+        "name": "Zoro",
+        "role": {
+            "id_role": 2,
+            "name": "User"
+        }
+    },
+    {
+        "email": "Nico.Robin@gmail.com",
+        "id_user": 9,
+        "lastname": "Robin",
+        "name": "Nico",
+        "role": {
+            "id_role": 2,
+            "name": "User"
+        }
+    },
+    {
+        "email": "Sanji.Vinsmoke@gmail.com",
+        "id_user": 10,
+        "lastname": "Vinsmoke",
+        "name": "Sanji",
+        "role": {
+            "id_role": 2,
+            "name": "User"
+        }
+    },
+    {
+        "email": "Monkey.D.Rufy@gmail.com",
+        "id_user": 7,
+        "lastname": "Monkey D. ",
+        "name": "Rufy",
+        "role": {
+            "id_role": 2,
+            "name": "User"
+        }
+    }
+]
+
+
+------------------------------------------------------------------------------------------------------------------
+
+6) users/<int:user_id>/change-role methods=["PUT"]
+
+API serve a modificare il ruolo di un utente.
+
+Ruoli -> Admin
+
+Quali sono i ruoli possibili?
+
+Admin          id : 1
+User           id : 2
+Airline-Admin  id : 3
+
+il ruolo è inserito dentro i token così da impedire che gli utenti possono usare tutte le API
+
+<int:user_id> -> numero id dell' utente, se si vogliono cambiare i permessi all' utente 123 -> users/123/change-role
+
+Authorization Bearer token_utente
+
+body {
+  "new_role": "Airline-Admin"
+}
+
+Attenzione:
+new_role acetta solo SOLO: Admin, User, Airline-Admin
+
+Per impostare ad un utente la compagnia aerea per accedere alla dashboard vedere API 25
+
+risposta 200
+
+{
+    "message": "Role changed"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+7) aircraft/  methods=["GET"]
+
+API che permette di ottenere i dati di tutti gli aerei disponibili sul db in formato JSON. Guardare API numero 9 per aerei filtrati tramite produttore.
+
+Ruoli -> Admin, Airline-Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+[
+      {
+        "cabin_max_cols": 7,
+        "double_deck": false,
+        "id_aircraft": 1,
+        "manufacturer": {
+            "id_manufacturer": 1,
+            "name": "Airbus"
+        },
+        "max_economy_seats": 180,
+        "name": "A320"
+    },
+    {
+        "cabin_max_cols": 7,
+        "double_deck": false,
+        "id_aircraft": 2,
+        "manufacturer": {
+            "id_manufacturer": 1,
+            "name": "Airbus"
+        },
+        "max_economy_seats": 160,
+        "name": "A319"
+    },
+    {
+        "cabin_max_cols": 7,
+        "double_deck": false,
+        "id_aircraft": 3,
+        "manufacturer": {
+            "id_manufacturer": 1,
+            "name": "Airbus"
+        },
+        "max_economy_seats": 244,
+        "name": "A321"
+    }
+]
+
+Spiegazione dati:
+
+double_deck -> indica se l'aereo ha doppio piano oppure new_role 
+max_economy_seats -> indica il massimo di sedili classe economy può avere. Perchè questo dato è importante?
+Ogni classe economy, first, business, ecc... hanno un tipo di sedili diversi per dimensione a quelli economy (un business equivale a 4 economy). Il costruttore indica quindi il massiomo numero consentito di sedili economy poi la compagnia aerea deciderà come organizzarsi.
+
+------------------------------------------------------------------------------------------------------------------
+
+8) /manufacturer/  methods=["GET"]
+
+API che permette di ottenere i dati di tutti i costruttori disponibili sul db in formato JSON. 
+
+Ruoli -> Admin, Airline-Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+[
+    {
+        "id_manufacturer": 1,
+        "name": "Airbus"
+    },
+    {
+        "id_manufacturer": 2,
+        "name": "Boeing"
+    },
+    {
+        "id_manufacturer": 3,
+        "name": "Embraer"
+    },
+    {
+        "id_manufacturer": 4,
+        "name": "Bombardier"
+    },
+    {
+        "id_manufacturer": 5,
+        "name": "Comac"
+    }
+]
+
+------------------------------------------------------------------------------------------------------------------
+
+9) aircraft/manufacturer/<int:id_manufacturer> methods=["GET"]
+
+API che permette di ottenere i dati di tutti gli aerei disponibili ma solo di un produttore, passato con il suo id. Si può vedere come API numero 7 ma filtrata 
+
+API che permette di ottenere i dati di tutti i costruttori disponibili sul db in formato JSON. 
+
+Ruoli -> Admin, Airline-Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+[
+
+    {
+        "id_aircraft": 1,
+        "max_economy_seats": 180,
+        "name": "A320"
+    },
+    {
+        "id_aircraft": 2,
+        "max_economy_seats": 160,
+        "name": "A319"
+    },
+    {
+        "id_aircraft": 3,
+        "max_economy_seats": 244,
+        "name": "A321"
+    }
+
+]
+
+------------------------------------------------------------------------------------------------------------------
+
+10) /airline/ methods=["GET"]
+
+API che ti permette di ottenere tutte le compagnie aeree presenti sul db in frormato JSON
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+[
+    {
+        "iata_code": "SR",
+        "name": "Sundair"
+    },
+    {
+        "iata_code": "WR",
+        "name": "WestJet Encore"
+    },
+    {
+        "iata_code": "CY",
+        "name": "Cyprus Airways"
+    },
+    {
+        "iata_code": "JY",
+        "name": "interCaribbean Airways"
+    }
+]
+
+------------------------------------------------------------------------------------------------------------------
+
+11) /airline/new methods=["POST"]
+
+API che inserisce una nuova compagnia aerea sul db
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+body {
+   "iata_code" : "S9",
+   "name" : "Straw-hats Airline"
+}
+
+iata_code è formato solo da 2 caratteri
+
+risposta 200
+
+{
+    "airline": {
+        "iata_code": "S9",
+        "name": "Straw-hats Airline"
+    },
+    "message": "airline inserted"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+12) /airline/add/aircraft/<int:id_aircraft> methods=["POST"]
+
+API che permette di aggiungere un aereo alla flotta di una compagnia aerea.
+<int:id_aircraft> -> id dell'aereo che si vuole aggiungere alla flotta
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+body {
+    "airline_code" : "AZ",
+}
+
+
+risposta 200
+
+{
+    "aircraft": {
+        "aircraft": {
+            "double_deck": false,
+            "id_aircraft": 1,
+            "manufacturer": {
+                "id_manufacturer": 1,
+                "name": "Airbus"
+            },
+            "max_economy_seats": 180,
+            "name": "A320"
+        },
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "id_aircraft_airline": 5
+    },
+    "message": "aircraft inserted successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+13) /<airline_code>/fleet methods=["GET"]
+
+API che permette di ricevere  gli aerei di una flotta di una airline.
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+risposta 200
+
+{
+    "aircraft": {
+            "id_aircraft": 7,
+            "manufacturer": {
+                "id_manufacturer": 1,
+                "name": "Airbus"
+            },
+            "max_economy_seats": 480,
+            "name": "A350-1000"
+        },
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "id_aircraft_airline": 1
+    },
+    {
+        "aircraft": {
+            "double_deck": false,
+            "id_aircraft": 8,
+            "manufacturer": {
+                "id_manufacturer": 2,
+                "name": "Boeing"
+            },
+            "max_economy_seats": 189,
+            "name": "737-800"
+        },
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "id_aircraft_airline": 2
+    }
+}
+
+In caso di nessun aereo nella flotta restituisce []
+
+------------------------------------------------------------------------------------------------------------------
+
+14) /airline/delete/aircraft/<int:id_aircraft_airline> methods=["DELETE"]
+
+API che elimina un aereo dalla flotta della compagnia
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+body {
+    "airline_code" : "AZ"
+}
+
+risposta 200
+
+{
+    "message": "aircraft deleted from the fleet successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+15) /airline/add/block/aircraft/<int:id_aircraft_airline> methods=["POST"]
+
+API che serve per creare un blocco di posti in un aerea dell'aereo.
+Dato che gli aerei sono divisi in classi, noi faremo lo stesso con il nostro aereo che selezioniamo tramite id_aircraft_airline.
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+body {
+    "matrix" : [
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true],
+    [true, true, true,false,true, true, true]
+  ],
+  "airline_code": "AZ",
+  "id_class": 4
+
+}
+
+la matrice rappresenta i posti del blocco dove true stà per posto mentre false per il corridoio.
+Come faccio a sapere quanto grande fare la matrice?
+Ogni aereo ha una dimensione massima di colonne, che sulle tabella pernde il nome di: cabin_max_cols
+
+Esempio, A321 ha cabin_max_cols = 7
+    {
+        "cabin_max_cols": 7,
+        "double_deck": false,
+        "id_aircraft": 3,
+        "manufacturer": {
+            "id_manufacturer": 1,
+            "name": "Airbus"
+        },
+        "max_economy_seats": 244,
+        "name": "A321"
+    }
+
+guardare API numero 7 oppure aircraft.json in dataset per più esempi.
+
+Perchè proprio il valore 7?
+A321 è il classico aereo per voli brevi quindi ha una composizione di questo modo:
+
+sedile-sedile-sedile-corridoio-sedile-sedile-sedile
+
+ATTENZIONE-> si tiene in conto anche dei corridoi, infatti cabin_max_cols = 7 e non a 6.
+
+per quanto riguarda la dimensione delle righe quella è illimitata, ma non deve mai superare il max_economy_seats (guardare esempio dell'A321)
+ovvio però che i posti vengono sommati tra i blocchi. Non sarà possiblile creare un blocco con 244 e poi crearne altri.
+
+
+risposta 200
+
+{
+    "message": "Block inserted successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+16) /airline/<airline_code>/aircraft/<int:id_aircraft_airline>/seat_map methods=["GET"]
+
+restituisce la seat_map dell'aereo della flotta con id = aircraft_airline
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+per vedere la risposta completa andare nella cartella dataset/seat_map.json
+
+{
+"additional_seats_remaining": 40.0,
+"seats_number": 140.0
+"seat_map": [
+        {
+            "class_name": "First",
+            "cols": 3,
+            "id_cell_block": 5,
+            "id_class": 1,
+            "rows": 5
+             "cells": [
+             {
+                    "id_cell": 1,
+                    "is_seat": true,
+                    "x": 0,
+                    "y": 0
+             },
+             {
+                    "id_cell": 2,
+                    "is_seat": false,
+                    "x": 1,
+                    "y": 0
+             },
+             {Tutte le altre celle},
+             ]
+
+        },
+    {Tutti gli altri blocchi},
+]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+17) /airline/aircraft/clone-seatmap methods=["POST"]
+
+ATTENZIONE questa API utilizza delle query non ottimizzate poichè nel db non sono ancora stati inseriti indici, è possibile che possa richiedere più di 15 sec.
+tempo per eliminare 150 record -> 12.24 sec
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+
+API che permette di copiare la disposizione dei blocchi e posizione sedili da un aereo ad un altro.
+Praticamente se ho 2 aerei A e B dove:
+A = source
+B = target
+
+B (target) compierà la seat_map di A (source) senza dover usare API 15 ovvero: /airline/add/block/aircraft/<int:id_aircraft_airline>
+
+ATTENZIONE se è già presente una configurazione dei posti di target, essa verà cancellata e sostituita con quella di A.
+
+body {
+  "airline_code" : "AZ"
+  "source_id" : 4,
+  "target_id" : 3
+
+}
+
+risposta 201
+
+{
+    "message": "Operation successful 3 copied blocks"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+18) /route/add  methods=["POST"]
+
+Ruoli -> Airline-Admin, Admin
+
+Authorization Bearer token_utente
+
+API che permette di aggiungere le tratte di una rotta. Occhio che non vanno a creare le rotte delle compagnie ma solo i segmenti. Da Frontend non la userai mai.
+
+body {
+  "departure_airport": "IST",
+  "arrival_airport": "HND",
+}
+
+risposta 200
+
+{
+    "message": "route inserted successfully",
+    "route": {
+        "code_arrival_airport": "HND",
+        "code_departure_airport": "IST",
+        "id_routes_section": 2
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+19) /airline/add/route methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che permette di creare le rotte per le compagnie aeree.
+
+Prima vedediamo l'esempio inserendo una rotta senza scalo
+
+{
+  "airline_code": "AZ",
+  "number_route": 1,
+  "start_date": "2025-08-10",
+  "end_date": "2025-08-12",
+  "base_price": 10,
+  "delta_for_return_route": 120,
+  "section": {
+    "departure_time": "09:00",
+    "departure_airport": "FCO",
+    "arrival_airport": "GYD",
+    "next_session": null
+  }
+}
+
+ATTENZIONE per poter eseguire questa API bisogna aver prima popolato la tabella price policy, guardare API 29
+
+chiariamo subito cosa significano questi dati:
+number_route è il numero della route sommato al codice della compagnia formerà il codice della route in queto caso AZ1. Il numero deve essere compreso tra 1 e 9999
+
+start_date indica quando inizia il contratto delle rotta
+end_date indica quando finisce il contratto delle rotta
+
+delta_for_return_route rappresenta dopo quanti minuti ci sarà la departure_time della route di ritorno rispetto al arrival_time
+
+section indica invece i dettagli della rotte, si noti che basta solo inserire la departure_time poichè l'orario d'arrivo viene calcolato dinamicamente in base alle coordinate dei vari airport
+"next_session" indice se la route è composta da più segmenti.
+
+Guardare quest'altro esempio che spiega invece la creazione di una rotta con scalo
+
+{
+ "airline_code": "AZ",
+  "number_route": 1930,
+  "start_date": "2025-08-10",
+  "end_date": "2025-08-12",
+  "delta_for_return_route": 780,
+  "section": {
+    "departure_time": "08:30",
+    "departure_airport": "FCO",
+    "arrival_airport": "JFK",
+    "next_session": {
+      "waiting_time": 180,
+      "departure_airport": "JFK",
+      "arrival_airport": "MIA",
+      "next_session": null
+    }
+  }
+}
+
+volendo si può andare avanti all'infinito ad inserire scali basta che alla fine si inserisca "next_session": null
+
+ogni volta che c'è uno scalo invece di departure_time ci sarà waiting_time che rappresenta il tempo d'attesa dello scalo espresso in minuti.
+Questo perchè?
+
+immaginiamo di prendere il volo FCO -> JFK
+si arriva a New York alle 16:35, dobbiamo avere il tempo di prendere il volo per Miami. In questo caso il volo JFK -> MIA partirà alle 19:35
+
+ATTENZIONE  il waiting_time deve essere sempre maggiore o uguale alle 2 ora
+
+
+Inoltre oltre a creare  una route in questo caso AZ1930 FCO -> JFK -> MIA
+API crea anche la sua route inversa: AZ1931 MIA -> JFK -> FCO
+
+ATTENZIONE il codice della rotta inversa è sempre quello della route di partenza +1 oppure -1 infatti:
+andata: AZ1930
+ritorno: AZ1931
+
+verrà segnalato errore se non si potrà avere la vicinanza diretta delle 2 route.
+
+Infine la route di ritorno avrà come departure_time la stessa della partenza ma 2 ore avanti (questo serve per 'assegnazione degli aerei')
+
+
+risposta 200
+
+{
+    "message": "Route AZ1 and return AZ2 created successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+20) /airline/route/<code>/change-deadline   methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che permette di aggiornare la data di scadenza di una route, per indicare la route da aggiornare passare il suo codice.
+ATTENZIONE modificare una route modificherà anche la route inversa se esiste. Non ha alcuna importanza quale codice di roue inserite.
+
+Body {
+   "airline_code": "AZ",
+  "end_date": "2027-09-12"
+}
+
+risposta 200
+
+{
+    "message": "End date updated successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+21) /airline/<airline_code>/route   methods=["GET"]
+
+API che permette di visualizzare tutte le route di una compagnia aerea
+
+risposta 200
+
+{
+    "routes": [
+        {
+            "details": [
+                {
+                    "arrival_airport": "GYD",
+                    "arrival_time": "12:40:00",
+                    "departure_airport": "FCO",
+                    "departure_time": "09:00:00",
+                    "id_next": null,
+                    "route_detail_id": 9,
+                    "route_section_id": 9
+                }
+            ],
+            "end_date": "2026-09-12",
+            "route_code": "AZ1",
+            "route_created_at": "2025-08-03T22:52:41.408573+00:00",
+            "start_date": "2025-08-10"
+        },
+        {
+            "details": [
+                {
+                    "arrival_airport": "JFK",
+                    "arrival_time": "16:35:00",
+                    "departure_airport": "FCO",
+                    "departure_time": "08:30:00",
+                    "id_next": 6,
+                    "route_detail_id": 5,
+                    "route_section_id": 5
+                },
+                {
+                    "arrival_airport": "MIA",
+                    "arrival_time": "21:40:00",
+                    "departure_airport": "JFK",
+                    "departure_time": "19:35:00",
+                    "id_next": null,
+                    "route_detail_id": 6,
+                    "route_section_id": 6
+                }
+            ],
+            "end_date": "2025-08-12",
+            "route_code": "AZ1930",
+            "route_created_at": "2025-08-03T22:42:08.779117+00:00",
+            "start_date": "2025-08-10"
+        },
+        {
+            "details": [
+                {
+                    "arrival_airport": "FCO",
+                    "arrival_time": "11:50:00",
+                    "departure_airport": "JFK",
+                    "departure_time": "03:45:00",
+                    "id_next": null,
+                    "route_detail_id": 8,
+                    "route_section_id": 8
+                },
+                {
+                    "arrival_airport": "JFK",
+                    "arrival_time": "01:45:00",
+                    "departure_airport": "MIA",
+                    "departure_time": "23:40:00",
+                    "id_next": 8,
+                    "route_detail_id": 7,
+                    "route_section_id": 7
+                }
+            ],
+            "end_date": "2025-08-12",
+            "route_code": "AZ1931",
+            "route_created_at": "2025-08-03T22:42:08.779122+00:00",
+            "start_date": "2025-08-10"
+        },
+        {
+            "details": [
+                {
+                    "arrival_airport": "FCO",
+                    "arrival_time": "18:20:00",
+                    "departure_airport": "GYD",
+                    "departure_time": "14:40:00",
+                    "id_next": null,
+                    "route_detail_id": 10,
+                    "route_section_id": 10
+                }
+            ],
+            "end_date": "2026-09-12",
+            "route_code": "AZ2",
+            "route_created_at": "2025-08-03T22:52:41.408576+00:00",
+            "start_date": "2025-08-10"
+        }
+    ]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+22) /airline/<airline_code>/route/<code>/info  methods=["GET"]
+
+API che permette di visualizzare le informazioni di una rotta dove <code> è il codice della rotta
+
+Body {
+  "airline_code": "AZ"
+}
+
+risposta 200
+
+{
+    "routes": {
+        "route_code": "AZ1931",
+        "segments": [
+            {
+                "arrival_time": "01:45",
+                "departure_time": "23:40",
+                "from": "MIA",
+                "id_airline_routes": 7,
+                "layover_minutes": null,
+                "to": "JFK"
+            },
+            {
+                "arrival_time": "11:50",
+                "departure_time": "03:45",
+                "from": "JFK",
+                "id_airline_routes": 8,
+                "layover_minutes": 120,
+                "to": "FCO"
+            }
+        ],
+        "total_duration": "12:10"
+    }
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+23)  airline/route/<code>/add-flight methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+<code> = codice della route in questo esempio passeremo AZ1
+Api che serve per inserire i voli nelle varie route. Mettiamo caso abbiamo creato la route AZ1 che va da VCE -> VNO e di conseguenza anche quella per il ritorno AZ2 VNO -> VCE
+come facciamo a inserire i voli per quell' API?
+
+Guardiamo i dati che passiamo
+
+{
+   "airline_code": "AZ"
+  "aircraft_id": 4,
+  "flight_schedule": [
+    {
+      "outbound": "2025-08-10",
+      "return_": "2025-08-10"
+    },
+    {
+      "outbound": "2025-08-11",
+      "return_": "2025-08-11"
+    },
+     {
+      "outbound": "2025-08-12",
+      "return_": "2025-08-12"
+    }
+  ]
+}
+
+aircraft_id è l'aereo a cui verrà assegnata la rotta.
+flight_schedule invece è una lista composte da due date ovvero il giorno di partenza della route di andata (AZ1) e il giorno di partenza della route di ritorno (AZ2)
+
+il backend calcolerà il giorno della data di arrivo quindi NON c'è bisogno di inserirla.
+E' bene specificare che le date non possono essere messe a caso. se outbound = 2025-08-10 e troviamo che la data d'arrivo è 2025-08-11 allora return_ non può essere 2025-08-10
+Inoltre le date devono essere inserite tra l'inizio e la fine del contratto della route, (per dettagli guardare API 19)
+
+Per semplicità si assume che un aereo può essere assegnato unicamente a una sola route (si intende route di andata e ritorno) quindi in questo caso l'aereo della compagnia aerea con id = 4
+può avere voli solo della route AZ1 e AZ2 (ho scento di fare così perchè altrimenti controllare che gli orari andassero bene e non si sovrapponessero per ogni route diventava troppo lungo e c'era anche la questione di dove si trovassero gli aerei in tempo reale. Per implementare il Tracker leggere la parte sotto e scoprirai perchè non l'ho implementato)
+
+Infine si considera che bisogna sempre passare all'API la route di andata e mai il ritorno. per capire qual'è la route d'andata il campo is_outbound della route deve essere True.
+(E' stato fatto così perchè altrimente dovevamo avere un server che ogni tot ore lanciasse uno script per tenere in considerazione dove si trovano in tempo reale gli aerei)
+
+risposta 200
+
+{
+    "flights": [
+        {
+            "outbound_arrival": "Sun, 10 Aug 2025 00:00:00 GMT",
+            "outbound_departure": "Sun, 10 Aug 2025 00:00:00 GMT",
+            "return_arrival": "Sun, 10 Aug 2025 00:00:00 GMT",
+            "return_departure": "Sun, 10 Aug 2025 00:00:00 GMT"
+        },
+        {
+            "outbound_arrival": "Mon, 11 Aug 2025 00:00:00 GMT",
+            "outbound_departure": "Mon, 11 Aug 2025 00:00:00 GMT",
+            "return_arrival": "Mon, 11 Aug 2025 00:00:00 GMT",
+            "return_departure": "Mon, 11 Aug 2025 00:00:00 GMT"
+        },
+        {
+            "outbound_arrival": "Tue, 12 Aug 2025 00:00:00 GMT",
+            "outbound_departure": "Tue, 12 Aug 2025 00:00:00 GMT",
+            "return_arrival": "Tue, 12 Aug 2025 00:00:00 GMT",
+            "return_departure": "Tue, 12 Aug 2025 00:00:00 GMT"
+        }
+    ],
+    "message": "Flight schedule successfully inserted"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+24) /flight/search  methods=["POST"]
+
+API che permette di eseguire una ricerca dei voli presenti sul db. Se si vuole un esempio guardare il sito di sky scanner
+
+body {
+   "departure_airport": "FCO",
+  "arrival_airport": "MIA",
+  "round_trip_flight": true,
+  "direct_flights": false,
+  "departure_date_outbound": "2025-08-10",
+  "departure_date_return": "2025-08-21",
+  "id_class": 4
+}
+
+round_trip_flight indica se si vuole trovare volo andata e ritorno. Se messo a false allora departure_date_return deve essere impostato a null.
+
+direct_flights indica se nei voli che ricerchiamo vogliamo oppure no voli diretti.
+
+Attenzione:
+Se abbiamo una route FCO -> JFK -> MIA che chiamiano AZ1930 se ricerchiamo la tratta JFK -> MIA o FCO -> JFK non ci veranno fuori i voli della rotta AZ1930 poichè sono
+considerati un blocco unico.
+
+Infine non ho implementato la ricerca interlinea perchè bisognava usare algoritmi per i grafi e sinceramente voglio finio stò robo presto.
+Per chi non lo sa interlinea è quando devi andare da Venezia a Novosibirsk ma nessuna compagnia aerea copre quella tratta, allora con un algoritmo che usa i grafi,
+troviamo per esempio che AZ copre Venezia -> Ankara mentre TK copre Ankara -> Novosibirsk
+
+
+Attenzione:
+se nell'aereo non sarà configurato il blocco dei posti con id_class == 4 allona API non restituirà il volo (per info vai all' API 15)
+
+risposta 200
+
+{
+    "outbound_flights": [
+        {
+            "airline": {
+                "iata_code": "TK",
+                "name": "Turkish Airlines"
+            },
+            "price": 250,
+            "route_code": "TK1930",
+            "scheduled_arrival_day": "2025-08-10",
+            "scheduled_departure_day": "2025-08-10",
+            "sections": [
+                {
+                    "arrival_time": "21:40:00",
+                    "departure_time": "19:35:00",
+                    "id_airline_routes": 25,
+                    "next_id": null,
+                    "section": {
+                        "code_arrival_airport": "MIA",
+                        "code_departure_airport": "JFK",
+                        "id_routes_section": 6
+                    }
+                },
+                {
+                    "arrival_time": "16:35:00",
+                    "departure_time": "08:30:00",
+                    "id_airline_routes": 24,
+                    "next_id": 25,
+                    "section": {
+                        "code_arrival_airport": "JFK",
+                        "code_departure_airport": "FCO",
+                        "id_routes_section": 5
+                    }
+                }
+            ]
+        },
+        {
+            "airline": {
+                "iata_code": "AZ",
+                "name": "Alitalia"
+            },
+            "price": null,
+            "route_code": "AZ1930",
+            "scheduled_arrival_day": "2025-08-10",
+            "scheduled_departure_day": "2025-08-10",
+            "sections": [
+                {
+                    "arrival_time": "21:40:00",
+                    "departure_time": "19:35:00",
+                    "id_airline_routes": 6,
+                    "next_id": null,
+                    "section": {
+                        "code_arrival_airport": "MIA",
+                        "code_departure_airport": "JFK",
+                        "id_routes_section": 6
+                    }
+                },
+                {
+                    "arrival_time": "16:35:00",
+                    "departure_time": "08:30:00",
+                    "id_airline_routes": 5,
+                    "next_id": 6,
+                    "section": {
+                        "code_arrival_airport": "JFK",
+                        "code_departure_airport": "FCO",
+                        "id_routes_section": 5
+                    }
+                }
+            ]
+        }
+    ],
+    "return_flights": [
+        {
+            "airline": {
+                "iata_code": "TK",
+                "name": "Turkish Airlines"
+            },
+            "price": 500,
+            "route_code": "TK1931",
+            "scheduled_arrival_day": "2025-08-21",
+            "scheduled_departure_day": "2025-08-21",
+            "sections": [
+                {
+                    "arrival_time": "23:50:00",
+                    "departure_time": "15:45:00",
+                    "id_airline_routes": 27,
+                    "next_id": null,
+                    "section": {
+                        "code_arrival_airport": "FCO",
+                        "code_departure_airport": "JFK",
+                        "id_routes_section": 8
+                    }
+                },
+                {
+                    "arrival_time": "12:45:00",
+                    "departure_time": "10:40:00",
+                    "id_airline_routes": 26,
+                    "next_id": 27,
+                    "section": {
+                        "code_arrival_airport": "JFK",
+                        "code_departure_airport": "MIA",
+                        "id_routes_section": 7
+                    }
+                }
+            ]
+        },
+        {
+            "airline": {
+                "iata_code": "TK",
+                "name": "Turkish Airlines"
+            },
+            "price": 500,
+            "route_code": "TK1931",
+            "scheduled_arrival_day": "2025-08-21",
+            "scheduled_departure_day": "2025-08-21",
+            "sections": [
+                {
+                    "arrival_time": "23:50:00",
+                    "departure_time": "15:45:00",
+                    "id_airline_routes": 27,
+                    "next_id": null,
+                    "section": {
+                        "code_arrival_airport": "FCO",
+                        "code_departure_airport": "JFK",
+                        "id_routes_section": 8
+                    }
+                },
+                {
+                    "arrival_time": "12:45:00",
+                    "departure_time": "10:40:00",
+                    "id_airline_routes": 26,
+                    "next_id": 27,
+                    "section": {
+                        "code_arrival_airport": "JFK",
+                        "code_departure_airport": "MIA",
+                        "id_routes_section": 7
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+25)  /users/<int:user_id>/add-airline   methods=["PUT"]
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+API che imposta ad un utente che ha ruolo Airline-Admin una compagnia aerea. In questo modo potrà gestire SOLO quella.
+
+body {
+    "airline_code": "AZ"
+}
+
+risposta 200
+
+{
+    "message": "airline assigned to the user"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+26)  airline/add-class-price-policy  methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che serve per aggiungere la politica dei costi delle relative classi. Se compri un biglietto in first class costerà di più rispetto ad economy,
+questa API serve appunto a stabilire la politica dei prezzi per le classi.
+
+body {
+    "id_class": 1,
+    "airline_code": "AZ",
+    "price_multiplier": 20,
+    "fixed_markup" : 10,
+}
+
+price_multiplier è la percentuale che va aggiunta al prezzo del biglietto se compri un posto di classe con id 1
+fixed_markup è il prezzo base per quella classe
+
+------------------------------------------------------------------------------------------------------------------
+
+27)  airline/class-price-policy/<int:id_class_price_policy>/modify  methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che serve a modificare il price_multiplier e fixed_markup
+
+body {
+    "airline_code": "AZ",
+    "price_multiplier": 20,
+    "fixed_markup" : 10,
+}
+
+Si noti che se si vuole modificare unicamente un valore, si può impostare il valore che non si vuole modificare a null.
+
+------------------------------------------------------------------------------------------------------------------
+
+28)  airline/<airline_code>/class-price-policy/  methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che passando per parametro il codice della compagnia aerea, restituisce la class-price-policy
+
+risposta 200
+
+{
+    "policies": [
+        {
+            "airline_code": "AZ",
+            "class_seat": {
+                "code": "Y",
+                "id_class": 4,
+                "name": "Economy"
+            },
+            "fixed_markup": 0,
+            "price_multiplier": 1
+        }
+    ]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+29) airline/<airline_code>/add/price-policy  methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che aggiunge alla compagnia aerea (airline_code) la price-policy, essa serve a creare, in base a dei calcoli, il costo del biglietto aereo di base
+
+body {
+    "fixed_markup": 10,
+    "price_for_km": 0.05,
+    "fee_fro_stopover" : 20,
+}
+
+fixed_markup = prezzo di base del biglietto
+price_for_km = moltiplicatore per Km
+fee_fro_stopover = tassa aggiuntiva per ogni scalo
+
+quindi il prezzo base del biglietto è dato da questa formula:
+
+prezzo = fixed_markup + (km_totali * price_for_km) + (numero_cali * fee_fro_stopover)
+
+------------------------------------------------------------------------------------------------------------------
+
+30) airline/<airline_code>/price-policy/modify  methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che ha lo scopo di modificare la price-policy di una compagnia aerea (airline_code)
+
+body {
+    "fixed_markup": null,
+    "price_for_km": 0.05,
+    "fee_fro_stopover" : 5,
+}
+
+Se non si vuole modificare un valore mettere a null.
+
+------------------------------------------------------------------------------------------------------------------
+
+31)   airline/<airline_code>/price-policy  methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+APi che serve a visualizzare la price policy della airline passata in parametro (code)
+
+risposta 200 (con airline_code = AZ)
+
+{
+    "policies": [
+        {
+            "airline_code": "AZ",
+            "fee_for_stopover": 25,
+            "fixed_markup": 20,
+            "price_for_km": 0.2
+        }
+    ]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+32) /airports/<code>  methods=["GET"]
+
+API che dato lo iata_code di un areoporto ti restituisce tutte le informazioni su esso.
+
+in questo caso per code = VCE
+
+risposta 200
+
+{
+    "airport": {
+        "city": {
+            "id_city": 605,
+            "name": "Venice"
+        },
+        "iata_code": "VCE",
+        "latitude": 45.505,
+        "longitude": 12.3433,
+        "name": "Marco Polo International Airport"
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+33)  /airports/  methods=["GET"]
+
+API che restituisce tutti gli airport
+
+risposta 200 (per la completa andare su dataset airport)
+
+"airports": [
+        {
+            "city": {
+                "id_city": 1,
+                "name": "Ayn al Faydah"
+            },
+            "iata_code": "AAN",
+            "latitude": 24.25,
+            "longitude": 55.75,
+            "name": "Al Ain Airport"
+        },
+        {
+            "city": {
+                "id_city": 2,
+                "name": "Novorossiysk"
+            },
+            "iata_code": "AAQ",
+            "latitude": 44.9,
+            "longitude": 37.3167,
+            "name": "Olkhovka Airport"
+        },
+        {
+            "city": {
+                "id_city": 3,
+                "name": "Allentown"
+            },
+            "iata_code": "ABE",
+            "latitude": 40.6514,
+            "longitude": -75.4342,
+            "name": "Lehigh Valley International Airport"
+        }
+      ]
+
+
+------------------------------------------------------------------------------------------------------------------
+
+34)  /airports/city/<int:city_id>  methods=["GET"]
+
+API che restituisce l'areoporto in base alla città (city_id)
+
+risposta 200 con city_id = 605
+
+{
+    "airports": [
+        {
+            "city": {
+                "id_city": 605,
+                "name": "Venice"
+            },
+            "iata_code": "VCE",
+            "latitude": 45.505,
+            "longitude": 12.3433,
+            "name": "Marco Polo International Airport"
+        }
+    ]
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+35) /airports/  methods=["POST"]
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+API che permette se sei Admin di inserire un areoporto nel db
+
+body {
+ "iata_code": "RKV",
+  "id_city": 308,
+  "name": "Aeroporto Internazionale di Keflavik",
+  "latitude":63.9850,
+  "longitude": -22.5924
+}
+
+risposta 200
+
+{
+    "airport": {
+        "city": {
+            "id_city": 308,
+            "name": "Reykjavik"
+        },
+        "iata_code": "RKV",
+        "latitude": 63.985,
+        "longitude": -22.5924,
+        "name": "Aeroporto Internazionale di Keflavik"
+    },
+    "message": "Airport created successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+36)  /airports/<string:iata_code>   methods=["PUT"]
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+API che permette di modificare i valori della tabella degli airport.
+
+body {
+     "id_city": null,
+     "name": "Aeroporto Internazionale di Keflavik",
+     "latitude":null,
+     "longitude": null
+}
+
+Se non si vogliono modificare dei campi come in questo caso id_city, metterlo uguale a null
+
+risposta 200
+
+{
+    "airport": {
+        "city": {
+            "id_city": 308,
+            "name": "Reykjavik"
+        },
+        "iata_code": "RKV",
+        "latitude": 63.985,
+        "longitude": -22.5924,
+        "name": "Aeroporto Internazionale di Keflavik"
+    },
+    "message": "Airport updated successfully"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+37) /airports/<string:iata_code>   methods=["DELETE"]
+
+Ruoli -> Admin
+
+Authorization Bearer token_utente
+
+API che elimina un areoporto
+
+risposta 200
+
+{
+    "message": "Airport deleted successfully"
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+38)  /airports/search?q=query   methods=["GET"]
+
+Api che ricerca gli aereoporti tramite nome o iata_code dell' airport
+
+query = VCE (se vogliamo fare la ricerca per iata_code)
+query = Marco Polo International Airport (se vogliamo fare la ricerca per nome)
+
+risposta 200
+
+{
+    "airports": [
+        {
+            "city": {
+                "id_city": 605,
+                "name": "Venice"
+            },
+            "iata_code": "VCE",
+            "latitude": 45.505,
+            "longitude": 12.3433,
+            "name": "Marco Polo International Airport"
+        }
+    ]
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+39) /airline/route/TK1930/base_price/   methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che permette di modiuficare il prezzo base di una rotta
+
+body {
+    "airline_code": "TK",
+    "base_price": 250
+}
+
+response 200
+
+{
+    "message": "route base price has been successfully modified."
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+40) /baggage/  methods=["GET"]
+
+API che restituisce tutti i tipi di bagagli
+
+risposta 200:
+
+[
+    {
+        "id_baggage": 1,
+        "name": "Cabin bag"
+    },
+    {
+        "id_baggage": 2,
+        "name": "Checked baggage"
+    },
+    {
+        "id_baggage": 3,
+        "name": "Personal item"
+    }
+]
+
+------------------------------------------------------------------------------------------------------------------
+
+41) /baggage/rules   methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che permette di aggiongere le regolo di dimensioni dei bagagli per le airline
+
+body {
+  "id_baggage_type": 1,
+  "airline_code": "AZ",
+  "max_weight_kg": 8,
+  "max_length_cm": 55,
+  "max_width_cm": 40,
+  "max_height_cm": 20,
+  "max_linear_cm": 115,
+  "over_weight_fee": 30,
+  "over_size_fee": 50,
+  "base_price": 25,
+  "allow_extra": false
+}
+
+ATTENZIONE -> si può aggiungere una sola rogola per tipo di bagaglio, es:
+
+id_baggage_type 1 corrisponde alla cabin bag, se AZ ha già le regole per la cabin bag allora non sarà possibile aggiungerne altre. per modificare le regole usare API 42
+
+nel body alcuni cambi possono essere messi a null:
+max_weight_kg,
+max_linear_cm,
+over_weight_fee
+
+------------------------------------------------------------------------------------------------------------------
+
+42) /baggage/rules   methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che permette di modificare le regole dei bagagli
+
+body {
+    "id_baggage_rules": 2,
+    "airline_code": "AZ",
+    "max_weight_kg": 10,
+    "max_length_cm": null,
+    "max_width_cm": null,
+    "max_height_cm": null,
+    "max_linear_cm": null,
+    "over_weight_fee": null,
+    "over_size_fee": 60,
+    "base_price": 30,
+    "allow_extra": false
+}
+
+se si vuole modificare un campo della tabella, inserire il nuovo valore altrimente mettere null.
+
+Gli unici valori richiesti sono:
+id_baggage_rules,
+airline_code
+
+------------------------------------------------------------------------------------------------------------------
+
+42) /baggage/<airline_code>/rules   methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che ti permette di visualizzare le regole per i bagagli per una compagnia aerea:
+
+risposta 200
+
+[
+    {
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "allow_extra": false,
+        "baggage": {
+            "id_baggage": 1,
+            "name": "Cabin bag"
+        },
+        "base_price": 30.0,
+        "id_baggage_rules": 1,
+        "max_height_cm": 20,
+        "max_length_cm": 55,
+        "max_linear_cm": 115,
+        "max_weight_Kg": 10,
+        "max_width_cm": 40,
+        "over_size_fee": 60.0,
+        "over_weight_fee": 30.0
+    }
+]
+
+------------------------------------------------------------------------------------------------------------------
+
+43) /baggage/class-policy   methods=["POST"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che serve per ad aggiungere la class-policy di una compagnia aerea.
+la class-policy specifica quanti bagagli sono inclusi nel biglietto: esempio (classe first hai inclusi nel prezzo 2 bagagli da stiva)
+
+body {
+  "airline_code": "AZ",
+  "id_baggage_type": 3,
+  "id_class": 4,
+  "quantity_included": 1
+}
+
+
+ATTENZIONE: è base specificare che c'è un vincolo unique (airline_code,id_baggage_type,id_class)
+
+
+------------------------------------------------------------------------------------------------------------------
+
+44) /baggage/class-policy   methods=["PUT"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che modifica la quantity_included della class-policy di una compagnia aerea
+
+body {
+  "id_class_baggage_policy": 1,
+  "airline_code": "AZ",
+  "quantity_included": 1
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+45) /baggage/<airline_code>/class-policy  methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che ti restituisce in formato JSON la class-policy di una compagnia aerea, se non ci sono dati restituisce []
+
+risposta 200
+
+[
+    {
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "baggage": {
+            "id_baggage": 1,
+            "name": "Cabin bag"
+        },
+        "class_": {
+            "code": "Y",
+            "id_class": 4,
+            "name": "Economy"
+        },
+        "id_class_baggage_policy": 1,
+        "quantity_included": 1
+    },
+    {
+        "airline": {
+            "iata_code": "AZ",
+            "name": "Alitalia"
+        },
+        "baggage": {
+            "id_baggage": 3,
+            "name": "Personal item"
+        },
+        "class_": {
+            "code": "Y",
+            "id_class": 4,
+            "name": "Economy"
+        },
+        "id_class_baggage_policy": 2,
+        "quantity_included": 1
+    }
+]
+
+
+------------------------------------------------------------------------------------------------------------------
+
+46) /flight/<int:flight_id>/seats-occupied   methods=["GET"]
+
+API che dato in parametro id del volo, ti restituisce i posti già occupati della seat_map dell' aereo. (per info sulla seat_map vedere API 16)
+
+
+risposta 200:
+
+[
+    {
+        "id_cell_block": 5,
+        "id_class": 1,
+        "occupied_seats": 1,
+        "seats": [
+            {
+                "id_cell": 3,
+                "x": 2,
+                "y": 0
+            }
+        ]
+    },
+    {
+        "id_cell_block": 6,
+        "id_class": 4,
+        "occupied_seats": 2,
+        "seats": [
+            {
+                "id_cell": 21,
+                "x": 5,
+                "y": 0
+            },
+            {
+                "id_cell": 43,
+                "x": 6,
+                "y": 3
+            }
+        ]
+    }
+]
+
+
+------------------------------------------------------------------------------------------------------------------
+
+47)  /flight/book    methods=["POST"]
+
+API che permette di acquistare un volo
+
+body {
+  "id_buyer": 9,
+  "tickets": [
+    {
+      "ticket_info": {
+        "id_flight": 21,
+        "id_seat": 21,
+        "additional_baggage": [
+          {
+            "id_baggage": 2,
+            "count": 2
+          },
+          {
+            "id_baggage": 1,
+            "count": 1
+          }
+        ]
+      },
+      "passenger_info": {
+        "name": "Niccolò",
+        "lastname": "Balini",
+        "date_birth": "1990-05-20",
+        "phone_number": "+393331234567",
+        "email": "Hummansafari@gmail.com",
+        "passport_number": "X1234537",
+        "sex": "M"
+      }
+    },
+    {
+      "ticket_info": {
+        "id_flight": 21,
+        "id_seat": 43,
+        "additional_baggage": []
+      },
+      "passenger_info": {
+        "name": "Dario",
+        "lastname": "Moccia",
+        "date_birth": "1995-08-15",
+        "phone_number": "+393334445556",
+        "email": "Depeffo@gmail.com",
+        "passport_number": "Y754321",
+        "sex": "M"
+      }
+    }
+  ]
+}
+
+id_buyer --> id dell'utente che compra il volo
+id_flight --> id del volo reperibile da API numero 24 /flight/search
+id_seat --> id del sedile che l'utente seleziona
+
+
+------------------------------------------------------------------------------------------------------------------
+
+
+48)  /users/flights   methods=["GET"]
+
+Authorization Bearer token_utente (per potere usare API l'utente deve essere loggato)
+
+Api che permette per gli utenti autenticati all'app di vedere tutti i voli che hanno acquistato e anche i dettagli.
+Tramite
+
+risposta 200 (biglietti comprati da user con id 9):
+
+[
+    {
+        "id_buyer": 9,
+        "id_passenger_ticket": 1,
+        "passenger": {
+            "date_birth": "Sun, 20 May 1990 00:00:00 GMT",
+            "email": "mario.rossi@example.com",
+            "id_passengers": 3,
+            "lastname": "Rossi",
+            "name": "Mario",
+            "passport_number": "X1234567",
+            "phone_number": "+393331234567"
+        },
+        "ticket": {
+            "flight": {
+                "airline": {
+                    "iata_code": "AZ",
+                    "name": "Alitalia"
+                },
+                "base_price": 80,
+                "id_aircraft": 4,
+                "id_flight": 21,
+                "route_code": "AZ5",
+                "scheduled_arrival_day": "2025-08-15",
+                "scheduled_departure_day": "2025-08-15",
+                "sections": [
+                    {
+                        "arrival_time": "14:30:00",
+                        "departure_time": "09:00:00",
+                        "id_airline_routes": 20,
+                        "next_id": null,
+                        "section": {
+                            "code_arrival_airport": "TAS",
+                            "code_departure_airport": "FCO",
+                            "id_routes_section": 20
+                        }
+                    }
+                ]
+            },
+            "id_ticket": 8,
+            "price": 180.0
+        }
+    },
+    {
+        "id_buyer": 9,
+        "id_passenger_ticket": 2,
+        "passenger": {
+            "date_birth": "Tue, 15 Aug 1995 00:00:00 GMT",
+            "email": "giulia.bianchi@example.com",
+            "id_passengers": 4,
+            "lastname": "Bianchi",
+            "name": "Giulia",
+            "passport_number": "Y7654321",
+            "phone_number": "+393334445556"
+        },
+        "ticket": {
+            "flight": {
+                "airline": {
+                    "iata_code": "AZ",
+                    "name": "Alitalia"
+                },
+                "base_price": 80,
+                "id_aircraft": 4,
+                "id_flight": 21,
+                "route_code": "AZ5",
+                "scheduled_arrival_day": "2025-08-15",
+                "scheduled_departure_day": "2025-08-15",
+                "sections": [
+                    {
+                        "arrival_time": "14:30:00",
+                        "departure_time": "09:00:00",
+                        "id_airline_routes": 20,
+                        "next_id": null,
+                        "section": {
+                            "code_arrival_airport": "TAS",
+                            "code_departure_airport": "FCO",
+                            "id_routes_section": 20
+                        }
+                    }
+                ]
+            },
+            "id_ticket": 9,
+            "price": 80.0
+        }
+    },
+    {
+        "id_buyer": 9,
+        "id_passenger_ticket": 3,
+        "passenger": {
+            "date_birth": "Tue, 15 Aug 1995 00:00:00 GMT",
+            "email": "prova.prova@example.com",
+            "id_passengers": 5,
+            "lastname": "Bianchi",
+            "name": "prova",
+            "passport_number": "Y7654121",
+            "phone_number": "+393334445556"
+        },
+        "ticket": {
+            "flight": {
+                "airline": {
+                    "iata_code": "AZ",
+                    "name": "Alitalia"
+                },
+                "base_price": 80,
+                "id_aircraft": 4,
+                "id_flight": 21,
+                "route_code": "AZ5",
+                "scheduled_arrival_day": "2025-08-15",
+                "scheduled_departure_day": "2025-08-15",
+                "sections": [
+                    {
+                        "arrival_time": "14:30:00",
+                        "departure_time": "09:00:00",
+                        "id_airline_routes": 20,
+                        "next_id": null,
+                        "section": {
+                            "code_arrival_airport": "TAS",
+                            "code_departure_airport": "FCO",
+                            "id_routes_section": 20
+                        }
+                    }
+                ]
+            },
+            "id_ticket": 10,
+            "price": 80.0
+        }
+    },
+    {
+        "id_buyer": 9,
+        "id_passenger_ticket": 4,
+        "passenger": {
+            "date_birth": "Tue, 15 Aug 1995 00:00:00 GMT",
+            "email": "prova1.prova1@example.com",
+            "id_passengers": 6,
+            "lastname": "Bianchi",
+            "name": "prova1",
+            "passport_number": "Y765sd21",
+            "phone_number": "+393334445556"
+        },
+        "ticket": {
+            "flight": {
+                "airline": {
+                    "iata_code": "AZ",
+                    "name": "Alitalia"
+                },
+                "base_price": 80,
+                "id_aircraft": 4,
+                "id_flight": 21,
+                "route_code": "AZ5",
+                "scheduled_arrival_day": "2025-08-15",
+                "scheduled_departure_day": "2025-08-15",
+                "sections": [
+                    {
+                        "arrival_time": "14:30:00",
+                        "departure_time": "09:00:00",
+                        "id_airline_routes": 20,
+                        "next_id": null,
+                        "section": {
+                            "code_arrival_airport": "TAS",
+                            "code_departure_airport": "FCO",
+                            "id_routes_section": 20
+                        }
+                    }
+                ]
+            },
+            "id_ticket": 11,
+            "price": 80.0
+        }
+    },
+    {
+        "id_buyer": 9,
+        "id_passenger_ticket": 5,
+        "passenger": {
+            "date_birth": "Tue, 15 Aug 1995 00:00:00 GMT",
+            "email": "giulia.bianchi@example.com",
+            "id_passengers": 4,
+            "lastname": "Bianchi",
+            "name": "Giulia",
+            "passport_number": "Y7654321",
+            "phone_number": "+393334445556"
+        },
+        "ticket": {
+            "flight": {
+                "airline": {
+                    "iata_code": "TK",
+                    "name": "Turkish Airlines"
+                },
+                "base_price": 250,
+                "id_aircraft": 10,
+                "id_flight": 145,
+                "route_code": "TK1930",
+                "scheduled_arrival_day": "2025-08-20",
+                "scheduled_departure_day": "2025-08-20",
+                "sections": [
+                    {
+                        "arrival_time": "21:40:00",
+                        "departure_time": "19:35:00",
+                        "id_airline_routes": 25,
+                        "next_id": null,
+                        "section": {
+                            "code_arrival_airport": "MIA",
+                            "code_departure_airport": "JFK",
+                            "id_routes_section": 6
+                        }
+                    },
+                    {
+                        "arrival_time": "16:35:00",
+                        "departure_time": "08:30:00",
+                        "id_airline_routes": 24,
+                        "next_id": 25,
+                        "section": {
+                            "code_arrival_airport": "JFK",
+                            "code_departure_airport": "FCO",
+                            "id_routes_section": 5
+                        }
+                    }
+                ]
+            },
+            "id_ticket": 12,
+            "price": 250.0
+        }
+    }
+]
+
+ATTENZIONE:
+
+il prezzo da visualizzare è price NON base_price!!!
+
+------------------------------------------------------------------------------------------------------------------
+
+48)  /airline/<airline_code>/analytics/route/<code>  methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che dato il codice della route, in questo caso AZ5 restituisce le info su quella rotta
+
+
+è possibile inserire anche start_date e end_date per creare un range di tempo, esempio:
+/airline/AF/analytics/route/CDG?start_date=2025-01-01&end_date=2025-06-30
+
+risposta 200:
+
+{
+    "class_distribution": {
+        "Economy": 50.0,
+        "First": 50.0
+    },
+    "passengers": 4,
+    "revenue": 420.0,
+    "route_code": "AZ5"
+}
+
+class_distribution indica la percentuale di acquisto di biglietto tra le varie classi
+
+------------------------------------------------------------------------------------------------------------------
+
+49) /airline/<airline_code>/analytics/flight/<id_flight>   methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che dato un id di un volo (id_flight) permette di vedere le analytics
+
+
+risposta 200:
+
+{
+    "class_distribution": {
+        "Economy": 50.0,
+        "First": 50.0
+    },
+    "id_flight": "21",
+    "passengers": 4,
+    "revenue": 420.0,
+    "route_code": "AZ5",
+    "scheduled_arrival_day": "2025-08-15",
+    "scheduled_departure_day": "2025-08-15"
+}
+
+------------------------------------------------------------------------------------------------------------------
+
+
+50) /airline/<airline_code>/analytics/routes?start_date=2025-01-01 methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che mostra numero di ticket che sono stati venduti e il totale dell'incasso per ogni route della compagnia
+
+start_date -> indica la data, in cui si inizia a considerare i biglietti, è utile per mostrare i dati ad esempio dell'ultimo mese, semestre ecc...
+              è possibile non inserire start_date nel body o impostarlo a NULL se si desiderà considerare Tutti i biglietti.
+
+risposta 200:
+
+
+{
+    "analytics": [
+        {
+            "route_code": "TK1",
+            "total_revenue": 30.0,
+            "total_tickets": 1
+        },
+        {
+            "route_code": "TK1930",
+            "total_revenue": 550.0,
+            "total_tickets": 2
+        }
+    ]
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+51) /airline/<airline_code>/analytics/routes/total_revenue?start_date=2025-01-01     methods=["GET"]
+
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che mostra numero i guadagni totali di una compagnia comprendento TUTTI i biglietti che gli utenti hanno comprato per ogni volo di ogni rotta
+
+start_date -> indica la data, in cui si inizia a considerare i biglietti, è utile per mostrare i dati ad esempio dell'ultimo mese, semestre ecc...
+              è possibile non inserire start_date nel body o impostarlo a NULL se si desiderà considerare Tutti i biglietti.
+
+risposta 200:
+
+{
+    "total_revenue": 580.0
+}
+
+
+------------------------------------------------------------------------------------------------------------------
+
+52) /airline/<airline_code>/flights    methods=["GET"]
+
+Ruoli -> Airline-Admin
+
+Authorization Bearer token_utente
+
+API che mostra inserendo il codice della compagnia aerea (es AZ, TK ecc...) tutti i voli della compagnia.
+
+risposta 200:
+
+{
+        "Route_code": "AZ9",
+        "airline_iata_code": "AZ",
+        "arrival_day": "Thu, 01 Jan 2026 00:00:00 GMT",
+        "arrival_time": "09:50",
+        "base_price": 135,
+        "departure_day": "Thu, 01 Jan 2026 00:00:00 GMT",
+        "departure_time": "08:30",
+        "destination": "LHR",
+        "duration": "01:20",
+        "id_flight": 267,
+        "origin": "VCE"
+}
+
+se si vuole vedere in interezza il risultato dell'API andare nella cartella dataset e cercare il file flights.json dove ci sono tutti i voli AZ.
