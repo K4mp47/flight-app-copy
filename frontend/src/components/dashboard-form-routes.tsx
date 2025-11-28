@@ -1,6 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useFieldArray, useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useFieldArray, useForm } from "react-hook-form";
+import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -9,42 +9,56 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { IconTrash, IconPlaneArrival, IconPlaneDeparture, IconPlus } from "@tabler/icons-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
-import { Button } from "./ui/button"
-import { api } from "@/lib/api"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  IconTrash,
+  IconPlaneArrival,
+  IconPlaneDeparture,
+  IconPlus,
+} from "@tabler/icons-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Button } from "./ui/button";
+import { api } from "@/lib/api";
 
 // Schema di validazione per una singola sezione
 const sectionSchema = z.object({
   departure_time: z.string().optional(),
-  waiting_time: z.coerce.number().min(120, "Must be at least 120 minutes (2h)").optional(),
+  waiting_time: z.coerce
+    .number()
+    .min(120, "Must be at least 120 minutes (2h)")
+    .optional(),
   departure_airport: z.string().min(3, "Required, 3-letter IATA code").max(3),
   arrival_airport: z.string().min(3, "Required, 3-letter IATA code").max(3),
-})
-
-// Schema di validazione per l'intera Route
-const formSchema = z.object({
-  airline_code: z.string().min(2, "Required, 2-letter IATA code").max(3),
-  number_route: z.coerce.number().min(1).max(9999),
-  start_date: z.date({
-    required_error: "Start date is required.",
-  }),
-  end_date: z.date({
-    required_error: "End date is required.",
-  }),
-  base_price: z.coerce.number().min(0, "Base price must be non-negative"),
-  delta_for_return_route: z.coerce.number().min(1, "Delta must be at least 1 minute"),
-  sections: z.array(sectionSchema).min(1, "At least one flight segment is required"),
-}).refine((data) => data.end_date > data.start_date, {
-  message: "End date must be after start date.",
-  path: ["end_date"],
 });
 
-type RouteFormValues = z.infer<typeof formSchema>
+// Schema di validazione per l'intera Route
+const formSchema = z
+  .object({
+    airline_code: z.string().min(2, "Required, 2-letter IATA code").max(3),
+    number_route: z.coerce.number().min(1).max(9999),
+    start_date: z.date({
+      required_error: "Start date is required.",
+    }),
+    end_date: z.date({
+      required_error: "End date is required.",
+    }),
+    base_price: z.coerce.number().min(0, "Base price must be non-negative"),
+    delta_for_return_route: z.coerce
+      .number()
+      .min(1, "Delta must be at least 1 minute"),
+    sections: z
+      .array(sectionSchema)
+      .min(1, "At least one flight segment is required"),
+  })
+  .refine(data => data.end_date > data.start_date, {
+    message: "End date must be after start date.",
+    path: ["end_date"],
+  });
+
+type RouteFormValues = z.infer<typeof formSchema>;
 
 export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
   const form = useForm<RouteFormValues>({
@@ -56,21 +70,25 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
       end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
       base_price: 10,
       delta_for_return_route: 120,
-      sections: [{
-        departure_time: "09:00",
-        departure_airport: "FCO",
-        arrival_airport: "GYD",
-      }],
+      sections: [
+        {
+          departure_time: "09:00",
+          departure_airport: "FCO",
+          arrival_airport: "GYD",
+        },
+      ],
     },
     mode: "onChange",
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "sections",
-  })
+  });
 
-  const convertSectionsToApiFormat = (sections: RouteFormValues['sections']): ApiSection | null => {
+  const convertSectionsToApiFormat = (
+    sections: RouteFormValues["sections"]
+  ): ApiSection | null => {
     if (sections.length === 0) {
       return null;
     }
@@ -105,8 +123,13 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
   async function onSubmit(data: RouteFormValues) {
     try {
       for (let i = 0; i < data.sections.length - 1; i++) {
-        if (data.sections[i].arrival_airport !== data.sections[i + 1].departure_airport) {
-          toast.error(`Error: Departure airport of segment ${i + 2} (${data.sections[i + 1].departure_airport}) must match arrival airport of segment ${i + 1} (${data.sections[i].arrival_airport}).`);
+        if (
+          data.sections[i].arrival_airport !==
+          data.sections[i + 1].departure_airport
+        ) {
+          toast.error(
+            `Error: Departure airport of segment ${i + 2} (${data.sections[i + 1].departure_airport}) must match arrival airport of segment ${i + 1} (${data.sections[i].arrival_airport}).`
+          );
           return;
         }
       }
@@ -131,26 +154,30 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
         base_price: data.base_price,
         delta_for_return_route: data.delta_for_return_route,
         section: convertSectionsToApiFormat(data.sections),
-      }
+      };
 
       console.log("API Payload:", JSON.stringify(apiPayload, null, 2));
-      
+
       await api.post("/airline/add/route", apiPayload);
-      toast.success(`Route ${data.airline_code.toUpperCase()}${data.number_route} created successfully!`);
-      
+      toast.success(
+        `Route ${data.airline_code.toUpperCase()}${data.number_route} created successfully!`
+      );
+
       // Chiudi il dialog se necessario
       document.getElementById("close-route-dialog")?.click();
-
     } catch (error: unknown) {
       console.error("Error creating route:", error);
-      toast.error("Error creating route: " + (error instanceof Error ? error.message : "Unknown error"));
+      toast.error(
+        "Error creating route: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   }
 
   // ✅ Funzione migliorata per aggiungere segmenti
   const addSegment = () => {
     const lastSection = fields[fields.length - 1];
-    
+
     if (!lastSection?.arrival_airport) {
       toast.error("Please complete the previous segment first");
       return;
@@ -162,7 +189,7 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
       arrival_airport: "",
       departure_time: undefined,
     };
-    
+
     append(newSegment);
   };
 
@@ -178,17 +205,17 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
               <FormItem>
                 <FormLabel>Airline Code</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="AZ" 
-                    {...field} 
-                    onChange={e => field.onChange(e.target.value.toUpperCase())} 
+                  <Input
+                    placeholder="AZ"
+                    {...field}
+                    onChange={e => field.onChange(e.target.value.toUpperCase())}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="number_route"
@@ -196,11 +223,13 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
               <FormItem>
                 <FormLabel>Route Number</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="1930" 
-                    {...field} 
-                    onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                  <Input
+                    type="number"
+                    placeholder="1930"
+                    {...field}
+                    onChange={e =>
+                      field.onChange(parseInt(e.target.value) || 0)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -217,26 +246,30 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Start Date</FormLabel>
-                
-                    <FormControl>
-                      
-                    <Input 
-                      type="date" 
-                      {...field} 
-                      value={
-                        (() => {
-                          const d = field.value instanceof Date ? field.value : field.value ? new Date(field.value) : null;
-                          return d && !isNaN(d.getTime()) ? format(d, "yyyy-MM-dd") : "";
-                        })()
-                      }
-                      onChange={e => {
-                        const val = e.target.value;
-                        const parsed = val ? new Date(val) : null;
-                        field.onChange(parsed);
-                      }}
-                      min={format(new Date(), "yyyy-MM-dd")}
-                    />
-                    </FormControl>
+
+                <FormControl>
+                  <Input
+                    type="date"
+                    {...field}
+                    value={(() => {
+                      const d =
+                        field.value instanceof Date
+                          ? field.value
+                          : field.value
+                            ? new Date(field.value)
+                            : null;
+                      return d && !isNaN(d.getTime())
+                        ? format(d, "yyyy-MM-dd")
+                        : "";
+                    })()}
+                    onChange={e => {
+                      const val = e.target.value;
+                      const parsed = val ? new Date(val) : null;
+                      field.onChange(parsed);
+                    }}
+                    min={format(new Date(), "yyyy-MM-dd")}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -249,24 +282,28 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
               <FormItem className="flex flex-col">
                 <FormLabel>End Date</FormLabel>
                 <FormControl>
-                      
-                    <Input 
-                      type="date" 
-                      {...field} 
-                      value={
-                        (() => {
-                          const d = field.value instanceof Date ? field.value : field.value ? new Date(field.value) : null;
-                          return d && !isNaN(d.getTime()) ? format(d, "yyyy-MM-dd") : "";
-                        })()
-                      }
-                      onChange={e => {
-                        const val = e.target.value;
-                        const parsed = val ? new Date(val) : null;
-                        field.onChange(parsed);
-                      }}
-                      min={format(new Date(), "yyyy-MM-dd")}
-                    />
-                    </FormControl>
+                  <Input
+                    type="date"
+                    {...field}
+                    value={(() => {
+                      const d =
+                        field.value instanceof Date
+                          ? field.value
+                          : field.value
+                            ? new Date(field.value)
+                            : null;
+                      return d && !isNaN(d.getTime())
+                        ? format(d, "yyyy-MM-dd")
+                        : "";
+                    })()}
+                    onChange={e => {
+                      const val = e.target.value;
+                      const parsed = val ? new Date(val) : null;
+                      field.onChange(parsed);
+                    }}
+                    min={format(new Date(), "yyyy-MM-dd")}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -282,18 +319,20 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
               <FormItem>
                 <FormLabel>Base Price (€)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="10" 
-                    {...field} 
-                    onChange={e => field.onChange(parseFloat(e.target.value) || 0)} 
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    {...field}
+                    onChange={e =>
+                      field.onChange(parseFloat(e.target.value) || 0)
+                    }
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="delta_for_return_route"
@@ -301,14 +340,18 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
               <FormItem>
                 <FormLabel>Return Route Delta (min)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="120" 
-                    {...field} 
-                    onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                  <Input
+                    type="number"
+                    placeholder="120"
+                    {...field}
+                    onChange={e =>
+                      field.onChange(parseInt(e.target.value) || 0)
+                    }
                   />
                 </FormControl>
-                <FormDescription>Minutes after arrival for return route departure</FormDescription>
+                <FormDescription>
+                  Minutes after arrival for return route departure
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -319,11 +362,14 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
         <div className="space-y-6 pt-6 border-t">
           <div className="flex justify-between items-center">
             <h4 className="font-semibold text-lg">Flight Segments</h4>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={addSegment}
-              disabled={fields.length === 0 || !form.getValues(`sections.${fields.length - 1}.arrival_airport`)}
+              disabled={
+                fields.length === 0 ||
+                !form.getValues(`sections.${fields.length - 1}.arrival_airport`)
+              }
             >
               <IconPlus className="mr-2 h-4 w-4" />
               Add Stopover
@@ -331,7 +377,10 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
           </div>
 
           {fields.map((field, index) => (
-            <div key={field.id} className="relative p-6 border rounded-lg space-y-4 bg-card">
+            <div
+              key={field.id}
+              className="relative p-6 border rounded-lg space-y-4 bg-card"
+            >
               <div className="flex items-center gap-2 mb-4">
                 {index === 0 ? (
                   <IconPlaneDeparture className="h-5 w-5 text-blue-600" />
@@ -339,12 +388,14 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
                   <IconPlaneArrival className="h-5 w-5 text-orange-600" />
                 )}
                 <h5 className="font-medium">
-                  {index === 0 ? `Flight Segment 1 (Departure)` : `Stopover Segment ${index + 1}`}
+                  {index === 0
+                    ? `Flight Segment 1 (Departure)`
+                    : `Stopover Segment ${index + 1}`}
                 </h5>
                 {index > 0 && (
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
+                  <Button
+                    type="button"
+                    variant="destructive"
                     size="sm"
                     onClick={() => remove(index)}
                     className="ml-auto h-8 w-8"
@@ -378,11 +429,13 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
                       <FormItem>
                         <FormLabel>Waiting Time (min)</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="120" 
-                            {...field} 
-                            onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                          <Input
+                            type="number"
+                            placeholder="120"
+                            {...field}
+                            onChange={e =>
+                              field.onChange(parseInt(e.target.value) || 0)
+                            }
                           />
                         </FormControl>
                         <FormDescription>Min 120 minutes</FormDescription>
@@ -400,10 +453,12 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
                     <FormItem>
                       <FormLabel>Departure Airport</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="FCO" 
-                          {...field} 
-                          onChange={e => field.onChange(e.target.value.toUpperCase())}
+                        <Input
+                          placeholder="FCO"
+                          {...field}
+                          onChange={e =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
                           disabled={index > 0}
                           className={cn({ "bg-muted": index > 0 })}
                         />
@@ -421,10 +476,12 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
                     <FormItem>
                       <FormLabel>Arrival Airport</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="GYD" 
-                          {...field} 
-                          onChange={e => field.onChange(e.target.value.toUpperCase())} 
+                        <Input
+                          placeholder="GYD"
+                          {...field}
+                          onChange={e =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -437,7 +494,13 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
         </div>
 
         <div className="flex justify-end gap-3 pt-6">
-          <Button type="button" variant="outline" onClick={() => document.getElementById("close-route-dialog")?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              document.getElementById("close-route-dialog")?.click()
+            }
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -446,5 +509,5 @@ export function RouteCreationForm({ airlineCode }: { airlineCode?: string }) {
         </div>
       </form>
     </Form>
-  )
+  );
 }

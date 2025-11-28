@@ -1,15 +1,8 @@
-"use client"
+"use client";
 
-import {
-  IconDotsVertical,
-  IconLogout,
-} from "@tabler/icons-react"
+import { IconDotsVertical, IconLogout } from "@tabler/icons-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,38 +10,40 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { Button } from "./ui/button"
-import { api } from "@/lib/api"
+} from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { api } from "@/lib/api";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  }
+    name: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
 
   function handleLogout() {
-    api.post<LogoutResponse>("/users/logout", {
-      token: document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("token="))
-        ?.split("=")[1],
-    }).then(() => {
-      //remove token from cookies
-      document.cookie = "token=; path=/; max-age=0;" 
-      window.location.href = "/login" // Redirect to login page
-    })
+    api
+      .post<LogoutResponse>("/users/logout", {
+        token: document.cookie
+          .split("; ")
+          .find(row => row.startsWith("token="))
+          ?.split("=")[1],
+      })
+      .then(() => {
+        //remove token from cookies
+        document.cookie = "token=; path=/; max-age=0;";
+        window.location.href = "/login"; // Redirect to login page
+      });
   }
 
   return (
@@ -96,10 +91,15 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Button variant="ghost" className="w-full text-left cursor-pointer" asChild onClick={handleLogout}>
+              <Button
+                variant="ghost"
+                className="w-full text-left cursor-pointer"
+                asChild
+                onClick={handleLogout}
+              >
                 <div>
                   <IconLogout />
-                Log out
+                  Log out
                 </div>
               </Button>
             </DropdownMenuItem>
@@ -107,5 +107,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

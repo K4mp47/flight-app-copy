@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react"
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import React, { useEffect, useState } from "react";
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -9,44 +9,46 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { api } from "@/lib/api"
+} from "@/components/ui/card";
+import { api } from "@/lib/api";
 
 export function SectionCards() {
-  const [revenue, setRevenue] = useState<number | null>(null)
+  const [revenue, setRevenue] = useState<number | null>(null);
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     async function fetchRevenue() {
       try {
-        const user = await api.get<{ airline_code?: string }>("/users/me").catch(() => ({} as User))
-        const airlineCode = user?.airline_code ?? ""
+        const user = await api
+          .get<{ airline_code?: string }>("/users/me")
+          .catch(() => ({}) as User);
+        const airlineCode = user?.airline_code ?? "";
         const res = await api.get<{ total_revenue: number }>(
-          `/airline/${encodeURIComponent(airlineCode)}/analytics/routes/total_revenue`,
-        )
+          `/airline/${encodeURIComponent(airlineCode)}/analytics/routes/total_revenue`
+        );
         try {
-          console.log(res)
+          console.log(res);
           const data =
-            typeof res === "string" ? JSON.parse(res) : (res) ?? null
+            typeof res === "string" ? JSON.parse(res) : (res ?? null);
           // const value =
           //   typeof data === "number" ? data : data?.total_revenue ?? null
-          if (mounted) setRevenue(data?.total_revenue ?? null)
+          if (mounted) setRevenue(data?.total_revenue ?? null);
         } catch {
           // ignore parse errors / bad responses for now
-          if (mounted) setRevenue(null)
+          if (mounted) setRevenue(null);
         }
       } catch {
         // ignore fetch errors for now
       }
     }
 
-    void fetchRevenue()
+    void fetchRevenue();
 
     return () => {
-      mounted = false
-    }
-  }, [])
+      mounted = false;
+    };
+  }, []);
 
   const formatCurrency = (n: number | null) =>
     n == null
@@ -54,7 +56,7 @@ export function SectionCards() {
       : new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-        }).format(n)
+        }).format(n);
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -143,5 +145,5 @@ export function SectionCards() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

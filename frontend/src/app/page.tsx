@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-
   // check if the user is a company user
   const [companyuser, setCompanyuser] = useState(false);
 
@@ -15,11 +14,11 @@ export default function Home() {
       try {
         const token = document.cookie
           .split("; ")
-          .find((row) => row.startsWith("token="))
+          .find(row => row.startsWith("token="))
           ?.split("=")[1];
         if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          setCompanyuser(payload.role === 'Airline-Admin');
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setCompanyuser(payload.role === "Airline-Admin");
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

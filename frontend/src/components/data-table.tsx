@@ -96,8 +96,11 @@ export function DataTable({
 }) {
   const [isCopying, setIsCopying] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [selectedAircraft, setSelectedAircraft] = React.useState<Aircraft | null>(null);
-  const [copyAircraftId, setCopyAircraftId] = React.useState<number | null>(null);
+  const [selectedAircraft, setSelectedAircraft] =
+    React.useState<Aircraft | null>(null);
+  const [copyAircraftId, setCopyAircraftId] = React.useState<number | null>(
+    null
+  );
 
   // Fleet columns
   const fleetColumns: ColumnDef<Aircraft>[] = [
@@ -134,9 +137,9 @@ export function DataTable({
       header: () => <div className="w-full">Max Economy Seats</div>,
       cell: ({ row }) => (
         <form
-          onSubmit={(e) => {
+          onSubmit={e => {
             e.preventDefault();
-            toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+            toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
               loading: `Saving ${row.original.current_position}`,
               success: "Done",
               error: "Error",
@@ -304,39 +307,37 @@ export function DataTable({
     {
       accessorKey: "route_code",
       header: "Route",
-      cell: ({ row }) => <div>{row.original.route_code}</div>
+      cell: ({ row }) => <div>{row.original.route_code}</div>,
     },
     {
       accessorKey: "origin",
       header: "Origin",
-      cell: ({ row }) => <div>{row.original.origin}</div>
+      cell: ({ row }) => <div>{row.original.origin}</div>,
     },
     {
       accessorKey: "destination",
       header: "Destination",
-      cell: ({ row }) => <div>{row.original.destination}</div>
+      cell: ({ row }) => <div>{row.original.destination}</div>,
     },
     {
       accessorKey: "departure_date",
       header: "Departure",
-      cell: ({ row }) => <div>{row.original.departure_day}</div>
+      cell: ({ row }) => <div>{row.original.departure_day}</div>,
     },
     {
       accessorKey: "arrival_date",
       header: "Arrival",
-      cell: ({ row }) => <div>{row.original.arrival_day}</div>
+      cell: ({ row }) => <div>{row.original.arrival_day}</div>,
     },
     {
       accessorKey: "duration",
       header: "Duration",
-      cell: ({ row }) => <div>{row.original.duration}</div>
+      cell: ({ row }) => <div>{row.original.duration}</div>,
     },
     {
       accessorKey: "base_price",
       header: "Base Price",
-      cell: ({ row }) => (
-        <div>{row.original.base_price || "N/A"}</div>
-      ),
+      cell: ({ row }) => <div>{row.original.base_price || "N/A"}</div>,
     },
     {
       id: "actions",
@@ -371,11 +372,12 @@ export function DataTable({
     },
   ];
 
-  const columnsByView: Record<string, ColumnDef<Aircraft | Route | Flight>[]> = {
-    Fleet: fleetColumns as ColumnDef<Aircraft | Route | Flight>[],
-    Routes: routeColumns as ColumnDef<Aircraft | Route | Flight>[],
-    Flights: flightColumns as ColumnDef<Aircraft | Route | Flight>[],
-  };
+  const columnsByView: Record<string, ColumnDef<Aircraft | Route | Flight>[]> =
+    {
+      Fleet: fleetColumns as ColumnDef<Aircraft | Route | Flight>[],
+      Routes: routeColumns as ColumnDef<Aircraft | Route | Flight>[],
+      Flights: flightColumns as ColumnDef<Aircraft | Route | Flight>[],
+    };
 
   function RegularRow({ row }: { row: Row<Aircraft | Route | Flight> }) {
     return (
@@ -383,7 +385,7 @@ export function DataTable({
         data-state={row.getIsSelected() && "selected"}
         className="relative z-0"
       >
-        {row.getVisibleCells().map((cell) => (
+        {row.getVisibleCells().map(cell => (
           <TableCell key={cell.id}>
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </TableCell>
@@ -399,14 +401,17 @@ export function DataTable({
   const [data, setData] = React.useState<(Aircraft | Route | Flight)[]>(
     () => (initialData ?? []) as (Aircraft | Route | Flight)[]
   );
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   });
-  
+
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
@@ -415,15 +420,15 @@ export function DataTable({
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(() => {
     if (!Array.isArray(data)) return [];
-    
+
     return data.map((item, index) => {
-      if ('id_aircraft_airline' in item) {
+      if ("id_aircraft_airline" in item) {
         return String((item as Aircraft).id_aircraft_airline);
       }
-      if ('route_code' in item) {
+      if ("route_code" in item) {
         return String((item as Route).route_code);
       }
-      if ('id_flight' in item) {
+      if ("id_flight" in item) {
         return String((item as Flight).id_flight);
       }
       return String(index);
@@ -440,13 +445,13 @@ export function DataTable({
       pagination,
     },
     getRowId: (row, index) => {
-      if ('id_aircraft_airline' in row) {
+      if ("id_aircraft_airline" in row) {
         return String((row as Aircraft).id_aircraft_airline);
       }
-      if ('route_code' in row) {
+      if ("route_code" in row) {
         return String((row as Route).route_code);
       }
-      if ('id_flight' in row) {
+      if ("id_flight" in row) {
         return String((row as Flight).id_flight);
       }
       return String(index);
@@ -466,7 +471,7 @@ export function DataTable({
     if (!active || !over) return;
     if (view !== "Fleet") return;
     if (active && over && String(active.id) !== String(over.id)) {
-      setData((data) => {
+      setData(data => {
         const oldIndex = dataIds.indexOf(active.id);
         const newIndex = dataIds.indexOf(over.id);
         return arrayMove(data, oldIndex, newIndex);
@@ -475,7 +480,7 @@ export function DataTable({
   }
 
   function handleRemoveAircraft(row?: Aircraft): React.MouseEventHandler {
-    return async (e) => {
+    return async e => {
       e?.stopPropagation?.();
       if (!row || !row.id_aircraft_airline) return;
       try {
@@ -555,10 +560,7 @@ export function DataTable({
   }, [initialData]);
 
   async function handleAddFlight() {
-    const user = await api
-      .get<{ airline_code?: string }>("/users/me")
-      .catch(() => null);
-    const userIataCode = user?.airline_code ?? null;
+    await api.get<{ airline_code?: string }>("/users/me").catch(() => null);
   }
 
   function TableSkeleton() {
@@ -598,17 +600,17 @@ export function DataTable({
                 {table
                   ?.getAllColumns()
                   .filter(
-                    (column) =>
+                    column =>
                       typeof column.accessorFn !== "undefined" &&
                       column.getCanHide()
                   )
-                  .map((column) => {
+                  .map(column => {
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
                         className="capitalize"
                         checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
+                        onCheckedChange={value =>
                           column.toggleVisibility(!!value)
                         }
                       >
@@ -682,7 +684,7 @@ export function DataTable({
               </Dialog>
             )}
             {view === "Flights" && (
-               <Dialog>
+              <Dialog>
                 <DialogTrigger asChild>
                   <Button
                     className="hidden lg:flex"
@@ -725,9 +727,9 @@ export function DataTable({
               >
                 <Table>
                   <TableHeader className="bg-muted sticky top-0 z-10">
-                    {table.getHeaderGroups().map((headerGroup) => (
+                    {table.getHeaderGroups().map(headerGroup => (
                       <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
+                        {headerGroup.headers.map(header => {
                           return (
                             <TableHead key={header.id} colSpan={header.colSpan}>
                               {header.isPlaceholder
@@ -748,7 +750,7 @@ export function DataTable({
                         items={dataIds}
                         strategy={verticalListSortingStrategy}
                       >
-                        {table.getRowModel().rows.map((row) => (
+                        {table.getRowModel().rows.map(row => (
                           <DraggableRow key={row.index} row={row} />
                         ))}
                       </SortableContext>
@@ -778,7 +780,7 @@ export function DataTable({
                 </Label>
                 <Select
                   value={String(table.getState().pagination?.pageSize ?? 10)}
-                  onValueChange={(value) => {
+                  onValueChange={value => {
                     table.setPageSize(Number(value));
                   }}
                 >
@@ -790,7 +792,7 @@ export function DataTable({
                     />
                   </SelectTrigger>
                   <SelectContent side="top">
-                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                    {[10, 20, 30, 40, 50].map(pageSize => (
                       <SelectItem key={pageSize} value={String(pageSize)}>
                         {pageSize}
                       </SelectItem>
@@ -875,7 +877,7 @@ export function DataTable({
               <Input
                 type="number"
                 placeholder="Enter aircraft ID"
-                onChange={(e) => setCopyAircraftId(Number(e.target.value))}
+                onChange={e => setCopyAircraftId(Number(e.target.value))}
               />
             </DialogDescription>
           </DialogHeader>

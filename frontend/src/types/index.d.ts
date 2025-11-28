@@ -1,19 +1,19 @@
 interface User {
-  email: string
-  lastname: string
-  name: string
-  avatar: string
-  airline_code: string
+  email: string;
+  lastname: string;
+  name: string;
+  avatar: string;
+  airline_code: string;
 }
 
 interface Data {
-  access_token: string
-  message?: string
+  access_token: string;
+  message?: string;
   // add other fields if needed
 }
 
 interface LogoutResponse {
-  message?: string
+  message?: string;
 }
 
 /** interfaccia per lavorare con gli aerei fisici */
@@ -64,77 +64,77 @@ interface Route {
 }
 
 interface Ticket {
-  id_buyer: number
-  id_passenger_ticket: number
+  id_buyer: number;
+  id_passenger_ticket: number;
   passenger: {
-    date_birth: string
-    email: string
-    lastname: string
-    name: string
-    passport_number: string
-    phone_number: string
-  }
+    date_birth: string;
+    email: string;
+    lastname: string;
+    name: string;
+    passport_number: string;
+    phone_number: string;
+  };
   ticket: {
-    id_ticket: number
-    price: number
+    id_ticket: number;
+    price: number;
     flight: {
       airline: {
-        iata_code: string
-        name: string
-      }
-      base_price: number
-      id_aircraft: number
-      id_flight: number
-      route_code: string
-      scheduled_arrival_day: string
-      scheduled_departure_day: string
+        iata_code: string;
+        name: string;
+      };
+      base_price: number;
+      id_aircraft: number;
+      id_flight: number;
+      route_code: string;
+      scheduled_arrival_day: string;
+      scheduled_departure_day: string;
       sections: {
-        arrival_time: string
-        departure_time: string
-        id_airline_routes: number
-        next_id: number | null
+        arrival_time: string;
+        departure_time: string;
+        id_airline_routes: number;
+        next_id: number | null;
         section: {
-          code_arrival_airport: string
-          code_departure_airport: string
-          id_routes_section: number
-        }
-      }[]
-    }
-  }
-} 
+          code_arrival_airport: string;
+          code_departure_airport: string;
+          id_routes_section: number;
+        };
+      }[];
+    };
+  };
+}
 
 interface Flights {
   flights: Flight[];
 }
- 
+
 interface Flight {
-  id_flight: string,
-  route_code: string,
-  airline_iata_code: string,
-  arrival_day: string,
-  arrival_time: string,
-  base_price: number | null,
-  departure_day: string,
-  departure_time: string,
-  destination: string,
-  duration: string,
-  id_flight: number,
-  origin: string
+  id_flight: string;
+  route_code: string;
+  airline_iata_code: string;
+  arrival_day: string;
+  arrival_time: string;
+  base_price: number | null;
+  departure_day: string;
+  departure_time: string;
+  destination: string;
+  duration: string;
+  id_flight: number;
+  origin: string;
 }
 
 // interface Flight {
-  // id: string;
-  // company_id: string;
-  // flight_number: string;
-  // origin: string;
-  // destination: string;
-  // departure_time: string;
-  // arrival_time: string;
-  // duration: string;
-  // base_price: string;
-  // total_seats: number;
-  // available_seats: number;
-  // class_config: { [key: string]: { seats_available: number; price_multiplier: number } };
+// id: string;
+// company_id: string;
+// flight_number: string;
+// origin: string;
+// destination: string;
+// departure_time: string;
+// arrival_time: string;
+// duration: string;
+// base_price: string;
+// total_seats: number;
+// available_seats: number;
+// class_config: { [key: string]: { seats_available: number; price_multiplier: number } };
 // }
 
 // interface Flight {
@@ -157,9 +157,9 @@ interface ApiSection {
 }
 
 interface CreateSeatBlockDialogProps {
-  cabin_max_cols?: number
-  max_economy_seats: number
-  airline_code: string | undefined
-  aircraft_code: { value: string }
-  trigger?: React.ReactNode
+  cabin_max_cols?: number;
+  max_economy_seats: number;
+  airline_code: string | undefined;
+  aircraft_code: { value: string };
+  trigger?: React.ReactNode;
 }

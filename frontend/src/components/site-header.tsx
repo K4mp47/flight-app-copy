@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 // import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Plane } from "lucide-react"
-import Link from "next/link"
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Plane } from "lucide-react";
+import Link from "next/link";
 
 export function SiteHeader() {
   return (
@@ -15,17 +15,13 @@ export function SiteHeader() {
         /> */}
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" asChild size="sm" className="flex">
-            <Link
-              href="/"
-              className="dark:text-foreground"
-            >
+            <Link href="/" className="dark:text-foreground">
               <Plane className="size-4" />
-            
-            Flight app
-          </Link>
+              Flight app
+            </Link>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }
