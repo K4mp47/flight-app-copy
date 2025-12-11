@@ -8,17 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { reservationService } from "@/services/reservation";
 import { useAuth } from "@/hooks/useAuth";
-
-const Seat = ({ seatNumber, isSelected, onSelect, isDisabled }) => (
-  <Button
-    variant={isSelected ? "default" : "outline"}
-    onClick={() => onSelect(seatNumber)}
-    className="w-12 h-12 m-1"
-    disabled={isDisabled}
-  >
-    {seatNumber}
-  </Button>
-);
+import SeatMap from "@/components/SeatMap";
+import { SeatMapData } from "@/types/seat";
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -41,31 +32,41 @@ export default function ReservationPage() {
   ]);
   const [outboundOccupiedSeats, setOutboundOccupiedSeats] = useState([]);
   const [returnOccupiedSeats, setReturnOccupiedSeats] = useState([]);
+  const [outboundSeatMap, setOutboundSeatMap] = useState<SeatMapData | null>(null);
+  const [returnSeatMap, setReturnSeatMap] = useState<SeatMapData | null>(null);
 
   useEffect(() => {
     if (flightId) {
-      const fetchOccupiedSeats = async () => {
+      const fetchOutboundData = async () => {
         try {
-          const data = await reservationService.getOccupiedSeats(flightId);
-          const seats = data.flatMap((block) => block.seats.map((seat) => seat.id_cell));
+          const [occupied, seatMap] = await Promise.all([
+            reservationService.getOccupiedSeats(flightId),
+            reservationService.getSeatMap(flightId),
+          ]);
+          const seats = occupied.flatMap((block) => block.seats.map((seat) => seat.id_cell));
           setOutboundOccupiedSeats(seats);
+          setOutboundSeatMap(seatMap);
         } catch (error) {
-          toast.error("Failed to fetch outbound occupied seats.");
+          toast.error("Failed to fetch outbound flight data.");
         }
       };
-      fetchOccupiedSeats();
+      fetchOutboundData();
     }
     if (returnFlightId) {
-      const fetchOccupiedSeats = async () => {
+      const fetchReturnData = async () => {
         try {
-          const data = await reservationService.getOccupiedSeats(returnFlightId);
-          const seats = data.flatMap((block) => block.seats.map((seat) => seat.id_cell));
+          const [occupied, seatMap] = await Promise.all([
+            reservationService.getOccupiedSeats(returnFlightId),
+            reservationService.getSeatMap(returnFlightId),
+          ]);
+          const seats = occupied.flatMap((block) => block.seats.map((seat) => seat.id_cell));
           setReturnOccupiedSeats(seats);
+          setReturnSeatMap(seatMap);
         } catch (error) {
-          toast.error("Failed to fetch return occupied seats.");
+          toast.error("Failed to fetch return flight data.");
         }
       };
-      fetchOccupiedSeats();
+      fetchReturnData();
     }
   }, [flightId, returnFlightId]);
 
@@ -109,6 +110,13 @@ export default function ReservationPage() {
       return;
     }
 
+    for (const passenger of passengers) {
+      if (!passenger.outboundSeatId || (returnFlightId && !passenger.returnSeatId)) {
+        toast.error("Please select a seat for each passenger.");
+        return;
+      }
+    }
+
     const tickets = passengers.flatMap((p) => {
       const outboundTicket = {
         ticket_info: {
@@ -116,7 +124,7 @@ export default function ReservationPage() {
           id_seat: p.outboundSeatId,
           additional_baggage: [],
         },
-        passenger_info: { ...p },
+        passenger_info: (({ outboundSeatId, returnSeatId, ...rest }) => rest)(p),
       };
       if (returnFlightId) {
         const returnTicket = {
@@ -125,7 +133,7 @@ export default function ReservationPage() {
             id_seat: p.returnSeatId,
             additional_baggage: [],
           },
-          passenger_info: { ...p },
+          passenger_info: (({ outboundSeatId, returnSeatId, ...rest }) => rest)(p),
         };
         return [outboundTicket, returnTicket];
       }
@@ -146,7 +154,6 @@ export default function ReservationPage() {
     }
   };
 
-  const seats = Array.from({ length: 30 }, (_, i) => i + 1);
   const selectedOutboundSeats = passengers.map((p) => p.outboundSeatId);
   const selectedReturnSeats = passengers.map((p) => p.returnSeatId);
 
@@ -257,32 +264,26 @@ export default function ReservationPage() {
               </div>
               <div className="mt-4">
                 <h3 className="text-lg font-semibold">Select Outbound Seat</h3>
-                <div className="flex flex-wrap">
-                  {seats.map((seatNumber) => (
-                    <Seat
-                      key={seatNumber}
-                      seatNumber={seatNumber}
-                      isSelected={passenger.outboundSeatId === seatNumber}
-                      onSelect={(seat) => handleSeatSelect(index, seat, false)}
-                      isDisabled={selectedOutboundSeats.includes(seatNumber) && passenger.outboundSeatId !== seatNumber || outboundOccupiedSeats.includes(seatNumber)}
-                    />
-                  ))}
-                </div>
+                {outboundSeatMap && (
+                  <SeatMap
+                    seatMap={outboundSeatMap.seat_map[0]}
+                    selectedSeats={selectedOutboundSeats}
+                    occupiedSeats={outboundOccupiedSeats}
+                    onSeatSelect={(seat) => handleSeatSelect(index, seat, false)}
+                  />
+                )}
               </div>
               {returnFlightId && (
                 <div className="mt-4">
                   <h3 className="text-lg font-semibold">Select Return Seat</h3>
-                  <div className="flex flex-wrap">
-                    {seats.map((seatNumber) => (
-                      <Seat
-                        key={seatNumber}
-                        seatNumber={seatNumber}
-                        isSelected={passenger.returnSeatId === seatNumber}
-                        onSelect={(seat) => handleSeatSelect(index, seat, true)}
-                        isDisabled={selectedReturnSeats.includes(seatNumber) && passenger.returnSeatId !== seatNumber || returnOccupiedSeats.includes(seatNumber)}
-                      />
-                    ))}
-                  </div>
+                  {returnSeatMap && (
+                    <SeatMap
+                      seatMap={returnSeatMap.seat_map[0]}
+                      selectedSeats={selectedReturnSeats}
+                      occupiedSeats={returnOccupiedSeats}
+                      onSeatSelect={(seat) => handleSeatSelect(index, seat, true)}
+                    />
+                  )}
                 </div>
               )}
             </div>

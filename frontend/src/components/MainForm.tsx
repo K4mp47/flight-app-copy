@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,9 +36,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+type Airport = {
+  iata_code: string;
+  name: string;
+  city: {
+    name: string;
+  };
+};
+
 const FormSchema = z.object({
-  dod: z.date({ required_error: "Date of departure required" }),
-  dor: z.date({ required_error: "Date of return required" }),
+  dod: z.date({ required_error: "Date of departure is required." }),
+  dor: z.date().optional(),
   dpc: z.string({ required_error: "Departure city required" }),
   dpa: z.string({ required_error: "Arrival city required" }),
   class: z.string({ required_error: "Class required" }),
@@ -46,17 +56,24 @@ const FormSchema = z.object({
   infants: z.number().int().min(0),
 });
 
-const cities = [
-  { value: "new-york", label: "New York" },
-  { value: "los-angeles", label: "Los Angeles" },
-  { value: "chicago", label: "Chicago" },
-  { value: "houston", label: "Houston" },
-  { value: "miami", label: "Miami" },
-];
-
 export function MainForm() {
+  const router = useRouter();
+  const [tripType, setTripType] = useState("round-trip");
+  const [airports, setAirports] = useState<Airport[]>([]);
   const [openDeparture, setOpenDeparture] = useState(false);
   const [openArrival, setOpenArrival] = useState(false);
+
+  useEffect(() => {
+    const fetchAirports = async () => {
+      try {
+        const response = await api.get<{ airports: Airport[] }>("/airports");
+        setAirports(response.airports);
+      } catch (error) {
+        toast.error("Failed to fetch airports.");
+      }
+    };
+    fetchAirports();
+  }, []);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -68,14 +85,44 @@ export function MainForm() {
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast.success("Flight search initiated!");
-    console.log(data);
+    const params = new URLSearchParams();
+    params.append("origin", data.dpc);
+    params.append("destination", data.dpa);
+    params.append("departure_date", format(data.dod, "yyyy-MM-dd"));
+    if (data.dor) {
+      params.append("return_date", format(data.dor, "yyyy-MM-dd"));
+    }
+    router.push(`/search?${params.toString()}`);
   }
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 bg-gradient-to-b from-[#1e2022] to-black rounded-2xl shadow-2xl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <RadioGroup
+            defaultValue="round-trip"
+            className="grid grid-cols-2 gap-4"
+            onValueChange={setTripType}
+          >
+            <div>
+              <RadioGroupItem value="round-trip" id="round-trip" className="peer sr-only" />
+              <FormLabel
+                htmlFor="round-trip"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                Round Trip
+              </FormLabel>
+            </div>
+            <div>
+              <RadioGroupItem value="one-way" id="one-way" className="peer sr-only" />
+              <FormLabel
+                htmlFor="one-way"
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                One Way
+              </FormLabel>
+            </div>
+          </RadioGroup>
           {/* --- City Selection --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Departure */}
@@ -98,25 +145,27 @@ export function MainForm() {
                           )}
                         >
                           {field.value
-                            ? cities.find(c => c.value === field.value)?.label
-                            : "Select city..."}
+                            ? airports.find(
+                                airport => airport.iata_code === field.value
+                              )?.name
+                            : "Select airport..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-full bg-[#1e2022]  p-0">
                       <div className="flex flex-col">
-                        {cities.map(city => (
+                        {airports.map(airport => (
                           <Button
-                            key={city.value}
+                            key={airport.iata_code}
                             variant="ghost"
                             className="justify-start text-gray-200 hover:bg-gray-800"
                             onClick={() => {
-                              field.onChange(city.value);
+                              field.onChange(airport.iata_code);
                               setOpenDeparture(false);
                             }}
                           >
-                            {city.label}
+                            {airport.name} ({airport.iata_code})
                           </Button>
                         ))}
                       </div>
@@ -147,25 +196,27 @@ export function MainForm() {
                           )}
                         >
                           {field.value
-                            ? cities.find(c => c.value === field.value)?.label
-                            : "Select city..."}
+                            ? airports.find(
+                                airport => airport.iata_code === field.value
+                              )?.name
+                            : "Select airport..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-full bg-[#1e2022]  p-0">
                       <div className="flex flex-col">
-                        {cities.map(city => (
+                        {airports.map(airport => (
                           <Button
-                            key={city.value}
+                            key={airport.iata_code}
                             variant="ghost"
                             className="justify-start text-gray-200 hover:bg-gray-800"
                             onClick={() => {
-                              field.onChange(city.value);
+                              field.onChange(airport.iata_code);
                               setOpenArrival(false);
                             }}
                           >
-                            {city.label}
+                            {airport.name} ({airport.iata_code})
                           </Button>
                         ))}
                       </div>
@@ -179,16 +230,57 @@ export function MainForm() {
 
           {/* --- Dates --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {["dod", "dor"].map((name, idx) => (
+            <FormField
+              control={form.control}
+              name="dod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300 flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" /> Departure Date
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between text-left font-normal h-12 bg-[#1e2022] text-white hover:bg-gray-700 transition",
+                            !field.value && "text-gray-400"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "MMM d, yyyy")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto bg-[#1e2022]  p-2">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={date =>
+                          date < new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {tripType === "round-trip" && (
               <FormField
-                key={name}
                 control={form.control}
-                name={name as "dod" | "dor"}
+                name="dor"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-300 flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />{" "}
-                      {idx === 0 ? "Departure Date" : "Return Date"}
+                      <CalendarIcon className="w-4 h-4" /> Return Date
                     </FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -225,7 +317,7 @@ export function MainForm() {
                   </FormItem>
                 )}
               />
-            ))}
+            )}
           </div>
 
           {/* --- Class + Passengers --- */}

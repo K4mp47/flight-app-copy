@@ -9,5 +9,8 @@ export const reservationService = {
   },
   getOccupiedSeats: async (flightId) => {
     return await api.get(`/flight/${flightId}/seats-occupied`);
-  }
+  },
+  getSeatMap: async (flightId) => {
+    return await api.get(`/airline/0/aircraft/${flightId}/seat_map`);
+  },
 };
