@@ -28,7 +28,7 @@ export default function SearchResultsPage() {
   const [returnFlights, setReturnFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState("departure_time");
+  const [sortBy, setSortBy] = useState("price");
   const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
   const [companyuser, setCompanyuser] = useState(false);
   const [selectedOutboundFlight, setSelectedOutboundFlight] = useState<Flight | null>(null);
@@ -73,16 +73,35 @@ export default function SearchResultsPage() {
         const data = await api.get<{ outbound_flights: Flight[], return_flights: Flight[] }>(
           `/flight/search?${query.toString()}`
         );
-        setOutboundFlights(data.outbound_flights || []);
-        setReturnFlights(data.return_flights || []);
+
+        const sortFlights = (flights: Flight[]) => {
+          return flights.sort((a, b) => {
+            if (sortBy === "price") {
+              return sortOrder === "asc" ? a.base_price - b.base_price : b.base_price - a.base_price;
+            }
+            // Add other sort conditions here
+            return 0;
+          });
+        };
+
+        setOutboundFlights(sortFlights(data.outbound_flights || []));
+        setReturnFlights(sortFlights(data.return_flights || []));
       } catch (error: Error | unknown) {
         toast.error((error as Error).message || "Failed to fetch flights");
       }
-        setLoading(false);
+      setLoading(false);
     };
 
     fetchFlights();
   }, [searchParams, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (selectedOutboundFlight) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set("return_date", new Date(selectedOutboundFlight.scheduled_arrival_day).toISOString().split("T")[0]);
+      router.replace(`/search?${newSearchParams.toString()}`);
+    }
+  }, [selectedOutboundFlight, router, searchParams]);
 
   const handleSelectOutboundFlight = (flight: Flight) => {
     setSelectedOutboundFlight(flight);
